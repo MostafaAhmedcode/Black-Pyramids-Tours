@@ -145,7 +145,7 @@ export default function RoomModal({ room, onClose }: { room: Room; onClose: () =
                 </div>
                 <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                   <button onClick={() => setShowWizard(true)} className="btn-primary" style={{ border: 'none', cursor: 'pointer' }}>Book Room Online</button>
-                  <a href={`https://wa.me/201018157153?text=Hi%2C%20I%20would%20like%20to%20book%20the%20${encodeURIComponent(room.name)}`} target="_blank" rel="noopener noreferrer" className="btn-secondary" style={{ textDecoration: 'none' }}>WhatsApp Inquiry</a>
+                  <a href={`https://wa.me/201211385550?text=Hi%2C%20I%20would%20like%20to%20book%20the%20${encodeURIComponent(room.name)}`} target="_blank" rel="noopener noreferrer" className="btn-secondary" style={{ textDecoration: 'none' }}>WhatsApp Inquiry</a>
                 </div>
               </div>
             </>

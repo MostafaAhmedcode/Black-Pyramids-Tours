@@ -10,7 +10,7 @@ const contactCards = [
     title: 'WhatsApp (Fastest)',
     desc: 'Message us on WhatsApp for instant replies. Available 24/7.',
     value: '+20 101 815 7153',
-    href: 'https://wa.me/201018157153',
+    href: 'https://wa.me/201211385550',
     cta: 'Open WhatsApp',
     highlight: true,
   },
@@ -28,7 +28,7 @@ const contactCards = [
     title: 'Phone',
     desc: 'Call us directly. English-speaking staff available.',
     value: '+20 101 815 7153',
-    href: 'tel:+201018157153',
+    href: 'tel:+201211385550',
     cta: 'Call Now',
     highlight: false,
   },
@@ -255,7 +255,7 @@ export default function ContactClient() {
             {quickLinks.map((item) => (
               <a
                 key={item.label}
-                href={`https://wa.me/201018157153?text=${encodeURIComponent(item.msg)}`}
+                href={`https://wa.me/201211385550?text=${encodeURIComponent(item.msg)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{

@@ -219,7 +219,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         <strong>Next Steps:</strong> If your booking is <em>pending</em>, our front-office staff will review it shortly. To expedite confirmation, you can instantly message our team via WhatsApp using your Booking Reference.
       </p>
 
-      <a href="https://wa.me/201018157153?text=Hi%20I%20have%20booking%20{ref_id}" class="btn-action">Message on WhatsApp</a>
+      <a href="https://wa.me/201211385550?text=Hi%20I%20have%20booking%20{ref_id}" class="btn-action">Message on WhatsApp</a>
     </div>
     
     <div class="email-footer">

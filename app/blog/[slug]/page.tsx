@@ -22,13 +22,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   
   if (!blog) {
     return {
-      title: 'Egypt Travel Guide Not Found | Venus Pyramids Inn',
+      title: 'Egypt Travel Guide Not Found | Black Pyramids Tours',
       description: 'The requested luxury Egypt travel guide could not be found.',
     };
   }
 
   return {
-    title: `${blog.titleEn} | Venus Pyramids Inn`,
+    title: `${blog.titleEn} | Black Pyramids Tours`,
     description: blog.metaDescriptionEn,
     keywords: blog.keywordsEn,
     openGraph: {
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       type: 'article',
     },
     alternates: {
-      canonical: `https://venuspyramidsinn.com/blog/${blog.slug}`,
+      canonical: `https://blackpyramidsgateway.com/blog/${blog.slug}`,
     },
   };
 }

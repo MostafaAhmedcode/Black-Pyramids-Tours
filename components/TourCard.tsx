@@ -1,152 +1,274 @@
 'use client';
 
+import { useState } from 'react';
+import { AgencyTour } from '@/data/agencyData';
 import { Tour } from '@/data/tours';
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import ImageCarousel from './ImageCarousel';
 
-const F = 'var(--font-inter), Inter, system-ui, sans-serif';
+interface TourCardProps {
+  tour: AgencyTour | Tour;
+  index?: number;
+}
 
-export default function TourCard({ tour, index = 0 }: { tour: Tour; index?: number }) {
-  const [visible, setVisible] = useState(false);
+export default function TourCard({ tour, index }: TourCardProps) {
   const [hovered, setHovered] = useState(false);
 
-  const allImages = tour.images && tour.images.length > 0 ? tour.images : [tour.image];
+  // Normalize Tour / AgencyTour properties
+  const id = tour.id;
+  const title = tour.title;
+  const duration = tour.duration;
+  const description = tour.description;
+  const image = tour.image;
+  const rating = tour.rating;
 
-  useEffect(() => {
-    const t = setTimeout(() => setVisible(true), index * 80);
-    return () => clearTimeout(t);
-  }, [index]);
+  // Type checks and safe fallbacks
+  const difficulty = 'difficulty' in tour ? tour.difficulty : 'Medium';
+  const price = 'price' in tour ? tour.price : tour.basePrice;
+  const included = 'included' in tour ? tour.included : tour.includes;
+  const reviewsCount = 'reviewsCount' in tour ? tour.reviewsCount : tour.reviews;
+
+  // Difficulty badge styling
+  const getDifficultyColor = (diff: "Easy" | "Medium" | "Hard") => {
+    switch (diff) {
+      case 'Easy':
+        return '#2E7D32'; // refined green
+      case 'Medium':
+        return 'var(--gold)'; // gold
+      case 'Hard':
+        return 'var(--burgundy-hover)'; // burgundy
+      default:
+        return 'var(--gold)';
+    }
+  };
+
+  const getWhatsAppLink = () => {
+    const text = `Hello Black Pyramids Tours! I want to book the luxury *${title}* tour.\n\n- Tour: ${title}\n- Duration: ${duration}\n- Price: $${price}/person\n- Inclusions: ${included.join(', ')}`;
+    return `https://wa.me/201211385550?text=${encodeURIComponent(text)}`;
+  };
 
   return (
     <div
+      className="card shimmer-wrap"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? 'translateY(0)' : 'translateY(28px)',
-        transition: `opacity 0.6s ease ${index * 60}ms, transform 0.6s ease ${index * 60}ms`,
+        display: 'flex',
+        flexDirection: 'column',
         height: '100%',
+        background: 'linear-gradient(160deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.015) 100%)',
+        border: hovered ? '1px solid rgba(201,168,76,0.55)' : '1px solid rgba(201,168,76,0.18)',
+        boxShadow: hovered ? '0 24px 64px rgba(0,0,0,0.55), 0 0 40px rgba(201,168,76,0.08)' : '0 4px 20px rgba(0,0,0,0.3)',
+        transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        position: 'relative',
       }}
     >
-      <Link href={`/tour/${tour.id}`} target="_blank" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
-        <div
-          className="shimmer-wrap"
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
+      {/* ── Image & Badges ── */}
+      <Link
+        href={`/tour/${id}`}
+        target="_blank"
+        style={{ display: 'block', position: 'relative', width: '100%', height: 220, overflow: 'hidden' }}
+      >
+        <img
+          src={image}
+          alt={title}
           style={{
-            background: 'linear-gradient(160deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.015) 100%)',
-            border: hovered ? '1px solid rgba(201,168,76,0.55)' : '1px solid rgba(201,168,76,0.18)',
-            borderRadius: 2,
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
+            width: '100%',
             height: '100%',
-            transform: hovered ? 'translateY(-8px)' : 'translateY(0)',
-            boxShadow: hovered ? '0 24px 64px rgba(0,0,0,0.5), 0 0 40px rgba(201,168,76,0.07)' : '0 4px 20px rgba(0,0,0,0.3)',
-            transition: 'all 0.4s cubic-bezier(0.25,0.46,0.45,0.94)',
+            objectFit: 'cover',
+            transition: 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+            transform: hovered ? 'scale(1.08)' : 'scale(1)',
+          }}
+        />
+
+        {/* Dark overlay */}
+        <div
+          className="img-overlay"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+          }}
+        />
+
+        {/* Difficulty Badge */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 16,
+            left: 16,
+            background: 'rgba(26, 26, 26, 0.85)',
+            border: `1px solid ${getDifficultyColor(difficulty)}`,
+            padding: '4px 10px',
+            fontSize: '0.62rem',
+            fontFamily: 'var(--font-inter), Inter, sans-serif',
+            fontWeight: 700,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            color: '#fff',
+            backdropFilter: 'blur(6px)',
+            zIndex: 2,
           }}
         >
-          {/* Carousel */}
-          <div style={{ position: 'relative' }} onClick={(e) => {
-            // Only stop propagation if they clicked on the carousel next/prev arrows
-            // We'll let the user click the image to navigate!
-            const target = e.target as HTMLElement;
-            if (target.tagName === 'BUTTON' || target.closest('button')) {
-              e.preventDefault();
-            }
-          }}>
-            <ImageCarousel images={allImages} alt={tour.title} height={210} brightness={hovered ? 0.5 : 0.7} />
+          {difficulty}
+        </div>
 
-            {/* Tour type badge */}
-            <div style={{ position: 'absolute', top: 12, left: 12, zIndex: 6, pointerEvents: 'none' }}>
-              <span style={{ fontFamily: F, fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', background: 'var(--gold)', color: 'var(--navy)', padding: '4px 10px' }}>{tour.tourType}</span>
-            </div>
-
-            {/* Destination badge */}
-            <div style={{ position: 'absolute', top: 12, right: 10, zIndex: 6, pointerEvents: 'none' }}>
-              <span style={{ fontFamily: F, fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', background: 'rgba(7,12,26,0.75)', border: '1px solid rgba(201,168,76,0.4)', color: 'var(--gold)', padding: '4px 10px', backdropFilter: 'blur(6px)' }}>{tour.destination}</span>
-            </div>
-
-            {/* Duration */}
-            <div style={{ position: 'absolute', bottom: 28, left: 12, zIndex: 6, pointerEvents: 'none' }}>
-              <span style={{ fontFamily: F, fontSize: '0.65rem', color: 'rgba(255,255,255,0.85)' }}>🕐 {tour.duration}</span>
-            </div>
-          </div>
-
-          {/* Body */}
-          <div
-            style={{ padding: '20px 20px 24px', display: 'flex', flexDirection: 'column', flex: 1 }}
-          >
-            <h3 className="font-heading" style={{
-              fontSize: '1rem', fontWeight: 500,
-              color: hovered ? 'var(--gold)' : 'var(--sand)',
-              marginBottom: 8, lineHeight: 1.35,
-              transition: 'color 0.3s',
-            }}>
-              {tour.title}
-            </h3>
-
-            <p style={{
-              fontFamily: 'var(--font-inter), Inter, sans-serif',
-              fontSize: '0.78rem', color: 'var(--sand-2)',
-              lineHeight: 1.65, marginBottom: 14,
-              display: '-webkit-box', WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical', overflow: 'hidden',
-              flex: 1,
-            }}>
-              {tour.description}
-            </p>
-
-            {/* Highlights */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
-              {tour.highlights.slice(0, 3).map((h) => (
-                <span key={h} style={{
-                  fontFamily: 'var(--font-inter), Inter, sans-serif',
-                  fontSize: '0.58rem', fontWeight: 700,
-                  letterSpacing: '0.12em', textTransform: 'uppercase',
-                  background: 'rgba(201,168,76,0.1)',
-                  border: '1px solid rgba(201,168,76,0.22)',
-                  color: 'var(--gold)',
-                  padding: '3px 8px',
-                }}>{h}</span>
-              ))}
-            </div>
-
-            {/* Inclusions preview */}
-            <div style={{
-              borderTop: '1px solid rgba(201,168,76,0.12)',
-              paddingTop: 12, marginBottom: 16,
-              display: 'flex', flexDirection: 'column', gap: 4,
-            }}>
-              {['Private luxury A/C car', 'Full English-speaking team', 'Lunch included'].map((inc) => (
-                <div key={inc} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ color: 'var(--gold)', fontSize: '0.6rem' }}>✓</span>
-                  <span style={{ fontFamily: 'var(--font-inter), Inter, sans-serif', fontSize: '0.68rem', color: 'var(--sand-2)' }}>{inc}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Rating + Price + CTA */}
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 'auto' }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
-                  <span style={{ color: 'var(--gold)', fontSize: '0.85rem' }}>⭐</span>
-                  <span style={{ fontFamily: 'var(--font-inter), Inter, sans-serif', fontSize: '0.8rem', color: 'var(--sand)', fontWeight: 700 }}>{tour.rating}</span>
-                  <span style={{ fontFamily: 'var(--font-inter), Inter, sans-serif', fontSize: '0.7rem', color: 'var(--sand-3)' }}>({tour.reviews})</span>
-                </div>
-                <div style={{ fontFamily: 'var(--font-inter), Inter, sans-serif', fontSize: '0.58rem', color: 'var(--sand-3)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>From</div>
-                <div className="font-heading" style={{ fontSize: '1.7rem', color: 'var(--gold)', lineHeight: 1 }}>${tour.basePrice}</div>
-                <div style={{ fontFamily: 'var(--font-inter), Inter, sans-serif', fontSize: '0.58rem', color: 'var(--sand-3)' }}>per person</div>
-              </div>
-              <span
-                className="btn-primary"
-                style={{ fontSize: '0.62rem', padding: '10px 20px', display: 'inline-block' }}
-              >
-                Open The Trip
-              </span>
-            </div>
-          </div>
+        {/* Duration Badge */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 16,
+            right: 16,
+            background: 'rgba(26, 26, 26, 0.85)',
+            border: '1px solid rgba(201,168,76,0.3)',
+            padding: '4px 10px',
+            fontSize: '0.62rem',
+            fontFamily: 'var(--font-inter), Inter, sans-serif',
+            fontWeight: 600,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            color: 'var(--sand)',
+            backdropFilter: 'blur(6px)',
+            zIndex: 2,
+          }}
+        >
+          🕒 {duration}
         </div>
       </Link>
+
+      {/* ── Content Body ── */}
+      <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+        
+        {/* Rating Row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+          <span style={{ color: 'var(--gold)', fontSize: '0.85rem' }}>★</span>
+          <span style={{ fontSize: '0.8rem', color: '#fff', fontWeight: 700, fontFamily: 'var(--font-inter), sans-serif' }}>
+            {rating.toFixed(2)}
+          </span>
+          <span style={{ fontSize: '0.72rem', color: 'var(--sand-3)', fontFamily: 'var(--font-inter), sans-serif' }}>
+            ({reviewsCount} reviews)
+          </span>
+        </div>
+
+        {/* Title */}
+        <h3
+          className="font-heading"
+          style={{
+            fontSize: '1.25rem',
+            fontWeight: 500,
+            color: hovered ? 'var(--gold)' : '#fff',
+            marginBottom: 12,
+            lineHeight: 1.35,
+            transition: 'color 0.3s',
+          }}
+        >
+          <Link
+            href={`/tour/${id}`}
+            target="_blank"
+            style={{ textDecoration: 'none', color: 'inherit' }}
+          >
+            {title}
+          </Link>
+        </h3>
+
+        {/* Description */}
+        <p
+          style={{
+            fontSize: '0.9rem',
+            color: 'var(--sand-2)',
+            lineHeight: 1.65,
+            marginBottom: 16,
+            flexGrow: 1,
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}
+        >
+          {description}
+        </p>
+
+        {/* Inclusions Row */}
+        <div
+          style={{
+            borderTop: '1px solid rgba(201,168,76,0.12)',
+            paddingTop: 16,
+            marginBottom: 20,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 6,
+          }}
+        >
+          {included.map((inc) => (
+            <div key={inc} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ color: 'var(--gold)', fontSize: '0.75rem' }}>✓</span>
+              <span style={{ fontSize: '0.78rem', color: 'var(--sand-2)' }}>
+                {inc}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Price & CTA Section */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginTop: 'auto',
+            borderTop: '1px solid rgba(201,168,76,0.08)',
+            paddingTop: 16,
+            flexWrap: 'wrap',
+            gap: 12,
+          }}
+        >
+          <div>
+            <span style={{ fontSize: '0.58rem', fontFamily: 'var(--font-inter), sans-serif', textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--sand-3)', display: 'block' }}>
+              From
+            </span>
+            <span className="font-heading" style={{ fontSize: '1.6rem', color: 'var(--gold)', fontWeight: 600, lineHeight: 1.1 }}>
+              ${price}
+            </span>
+            <span style={{ fontSize: '0.62rem', color: 'var(--sand-3)', display: 'block', marginTop: 1 }}>
+              per person
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <Link
+              href={`/tour/${id}`}
+              target="_blank"
+              className="btn-secondary"
+              style={{
+                fontSize: '0.68rem',
+                padding: '10px 14px',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              Open The Trip
+            </Link>
+
+            <a
+              href={getWhatsAppLink()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-burgundy"
+              style={{
+                fontSize: '0.68rem',
+                padding: '10px 14px',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              Book Now
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -5,31 +5,78 @@ import { useSearchParams } from 'next/navigation';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
 import TourCard from '../components/TourCard';
-import RoomCard from '../components/RoomCard';
-import StaffCard from '../components/StaffCard';
+import HotelCard from '../components/HotelCard';
+import HotelRoomModal from '../components/HotelRoomModal';
 import ScrollObserver from '../components/ScrollObserver';
-import { staff } from '../data/staff';
-import { tours as staticTours } from '../data/tours';
-import { rooms as staticRooms } from '../data/rooms';
-import EgyptBlog from '../components/EgyptBlog';
-
-const DESTINATIONS = ['All', 'Cairo & Giza', 'Luxor', 'Aswan', 'Alexandria', 'Hurghada', 'Fayoum', 'White Desert', 'Red Sea'] as const;
-const TOUR_TYPES   = ['All', 'Half Day', 'Full Day', 'Multi-Day'] as const;
+import {
+  featuredHotels,
+  featuredTours,
+  topDestinations,
+  guestTestimonials,
+  Hotel,
+  RoomType,
+  AgencyTour
+} from '../data/agencyData';
 
 const F = 'var(--font-inter), Inter, system-ui, sans-serif';
+
+interface SelectedTripItem {
+  id: string; // unique item id
+  name: string;
+  type: 'Hotel' | 'Tour';
+  details: string;
+  price: number;
+}
 
 function SectionHeading({ label, title, subtitle }: { label: string; title: string; subtitle?: string }) {
   return (
     <div style={{ textAlign: 'center', marginBottom: 56 }}>
-      <div style={{ fontFamily: F, fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>{label}</div>
-      <h2 className="font-heading" style={{ fontSize: 'clamp(2rem, 4vw, 3.2rem)', fontWeight: 600, color: '#fff', marginBottom: 16, lineHeight: 1.15 }}>{title}</h2>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: subtitle ? 16 : 0 }}>
-        <div style={{ width: 60, height: 1, background: 'linear-gradient(90deg, transparent, var(--gold))' }} />
-        <span style={{ color: 'var(--gold)', fontSize: 8 }}>◆</span>
-        <div style={{ width: 60, height: 1, background: 'linear-gradient(90deg, var(--gold), transparent)' }} />
+      <div
+        className="section-label"
+        style={{
+          fontFamily: 'var(--font-inter), Inter, sans-serif',
+          fontSize: '0.72rem',
+          fontWeight: 600,
+          letterSpacing: '0.3em',
+          textTransform: 'uppercase',
+          color: 'var(--gold)',
+          marginBottom: 16
+        }}
+      >
+        {label}
       </div>
+      <h2
+        className="font-heading"
+        style={{
+          fontSize: 'clamp(2.2rem, 5vw, 3.5rem)',
+          fontWeight: 400,
+          color: '#fff',
+          marginBottom: 16,
+          lineHeight: 1.15
+        }}
+      >
+        {title}
+      </h2>
+      
+      {/* Decorative Golden Ornament Divider */}
+      <div className="gold-divider">
+        <span>◆</span>
+      </div>
+
       {subtitle && (
-        <p className="font-sub" style={{ fontSize: 'clamp(1.05rem, 2vw, 1.25rem)', fontStyle: 'italic', color: 'var(--sand-2)', maxWidth: 640, margin: '0 auto', lineHeight: 1.75 }}>{subtitle}</p>
+        <p
+          className="font-sub"
+          style={{
+            fontSize: 'clamp(1.05rem, 2vw, 1.25rem)',
+            fontStyle: 'italic',
+            color: 'var(--sand-2)',
+            maxWidth: 640,
+            margin: '20px auto 0',
+            lineHeight: 1.75
+          }}
+        >
+          {subtitle}
+        </p>
       )}
     </div>
   );
@@ -37,597 +84,1145 @@ function SectionHeading({ label, title, subtitle }: { label: string; title: stri
 
 export default function Home() {
   return (
-    <Suspense>
+    <Suspense fallback={
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1a1a1a', color: 'var(--gold)' }}>
+        <div style={{ textAlign: 'center' }}>
+          <span style={{ fontSize: '3rem', animation: 'pulse-gold 2s infinite' }}>▲</span>
+          <p style={{ fontFamily: 'var(--font-playfair)', fontSize: '1.2rem', marginTop: 12 }}>Loading Gateway...</p>
+        </div>
+      </div>
+    }>
       <HomeInner />
     </Suspense>
   );
 }
 
 function HomeInner() {
-  const [dest, setDest] = useState<string>('All');
-  const [type, setType] = useState<string>('All');
-  const [rooms, setRooms] = useState(staticRooms);
-  const [tours, setTours] = useState(staticTours);
-  const [teamMembers, setTeamMembers] = useState(staff);
+  const [selectedStars, setSelectedStars] = useState<'All' | 3 | 4 | 5>('All');
+  const [selectedHotelForModal, setSelectedHotelForModal] = useState<Hotel | null>(null);
+  
+  // Trip Builder state
+  const [tripCart, setTripCart] = useState<SelectedTripItem[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
   const searchParams = useSearchParams();
 
-  // Pre-filter from destination page links (?destination=Luxor)
+  // Scroll handler from destination links if needed
   useEffect(() => {
     const d = searchParams.get('destination');
     if (d) {
-      setDest(d);
-      // Scroll to tours section after a short delay
-      setTimeout(() => {
-        document.getElementById('tours')?.scrollIntoView({ behavior: 'smooth' });
-      }, 400);
+      const section = document.getElementById('tours');
+      if (section) {
+        setTimeout(() => {
+          section.scrollIntoView({ behavior: 'smooth' });
+        }, 400);
+      }
     }
   }, [searchParams]);
 
-  // Load any admin overrides saved to disk
-  useEffect(() => {
-    fetch('/api/save-data?type=rooms')
-      .then(r => r.json())
-      .then(json => {
-        if (json.success && json.data.length > 0) {
-          setRooms(prev => prev.map(r => {
-            const override = json.data.find((o: any) => o.id === r.id);
-            return override ? { ...r, ...override } : r;
-          }));
-        }
-      }).catch(() => {});
+  // Toast notifier helper
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 4000);
+  };
 
-    fetch('/api/save-data?type=tours')
-      .then(r => r.json())
-      .then(json => {
-        if (json.success && json.data.length > 0) {
-          setTours(prev => prev.map(t => {
-            const override = json.data.find((o: any) => o.id === t.id);
-            return override ? { ...t, ...override } : t;
-          }));
-        }
-      }).catch(() => {});
+  // Add Item to Trip Cart
+  const handleAddHotelRoomToTrip = (room: RoomType) => {
+    if (!selectedHotelForModal) return;
+    const newItem: SelectedTripItem = {
+      id: `hotel-${selectedHotelForModal.id}-${room.name}-${Date.now()}`,
+      name: selectedHotelForModal.name,
+      type: 'Hotel',
+      details: `${room.name} Room (${room.view})`,
+      price: room.price
+    };
+    setTripCart(prev => [...prev, newItem]);
+    setSelectedHotelForModal(null);
+    showToast(`Added ${room.name} Room at ${selectedHotelForModal.name} to your Custom Package!`);
+  };
 
-    fetch('/api/save-data?type=staff')
-      .then(r => r.json())
-      .then(json => {
-        if (json.success && json.data.length > 0) {
-          setTeamMembers(prev => prev.map(m => {
-            const override = json.data.find((o: any) => o.id === m.id);
-            return override ? { ...m, ...override } : m;
-          }));
-        }
-      }).catch(() => {});
-  }, []);
+  const handleRemoveTripItem = (itemId: string) => {
+    setTripCart(prev => prev.filter(item => item.id !== itemId));
+  };
 
-  const filtered = tours.filter((t) => {
-    const dMatch = dest === 'All' || t.destination === dest;
-    const tMatch = type === 'All' || t.tourType === type;
-    return dMatch && tMatch;
+  // Generate complete WhatsApp booking message from selected basket
+  const getWhatsAppCartLink = () => {
+    if (tripCart.length === 0) return '#';
+    let text = `Hello Black Pyramids Tours! I have customized a luxury Egypt trip package on your website.\n\nHere are my selected reservations:\n\n`;
+    
+    tripCart.forEach((item, index) => {
+      text += `${index + 1}. *[${item.type}]* ${item.name} — ${item.details} ($${item.price})\n`;
+    });
+
+    const totalCost = tripCart.reduce((sum, item) => sum + item.price, 0);
+    text += `\n*Estimated Package Total:* $${totalCost} USD\n\nPlease let me know the availability and how to proceed with final reservations!`;
+    return `https://wa.me/201211385550?text=${encodeURIComponent(text)}`;
+  };
+
+  // Star filtering logic
+  const filteredHotels = featuredHotels.filter(hotel => {
+    if (selectedStars === 'All') return true;
+    return hotel.stars === selectedStars;
   });
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--navy)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--charcoal)', position: 'relative' }}>
+      
+      {/* ── Navbar & Hero ── */}
       <Navbar />
       <Hero />
 
-      {/* ══ ABOUT ══ */}
-      <section id="about" style={{ padding: '96px 24px', background: 'linear-gradient(180deg, var(--navy) 0%, #080d1a 100%)' }}>
+      {/* ── 1. SERVICES SECTION (4 cards) ── */}
+      <section id="services" style={{ padding: '112px 24px 80px', background: 'linear-gradient(180deg, var(--charcoal) 0%, #202020 100%)' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 64, alignItems: 'center' }}>
-
-            {/* Left — text */}
-            <ScrollObserver>
-              <div>
-                <div style={{ fontFamily: F, fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>About Black Pyramids Tours</div>
-                <h2 className="font-heading" style={{ fontSize: 'clamp(2rem, 4vw, 2.8rem)', fontWeight: 600, color: '#fff', marginBottom: 16, lineHeight: 1.15 }}>Steps from the Giza Pyramids</h2>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
-                  <div style={{ width: 60, height: 1, background: 'linear-gradient(90deg, transparent, var(--gold))' }} />
-                  <span style={{ color: 'var(--gold)', fontSize: 8 }}>◆</span>
-                  <div style={{ width: 60, height: 1, background: 'linear-gradient(90deg, var(--gold), transparent)' }} />
-                </div>
-                <p className="font-sub" style={{ fontSize: '1.15rem', fontStyle: 'italic', color: 'var(--sand-2)', lineHeight: 1.8, marginBottom: 20 }}>
-                  Located on El Fokahaa Street, Nazlet El Batran, Giza — Black Pyramids Tours places you within a 5-minute drive of the Giza Pyramid Complex and the Great Sphinx.
-                </p>
-                <p style={{ fontFamily: F, fontSize: '0.95rem', color: 'var(--sand-3)', lineHeight: 1.85, marginBottom: 28 }}>
-                  Our air-conditioned rooms feature LCD televisions, rainfall showerheads, designer toiletries, electric kettles, and free tea &amp; coffee. Enjoy a complimentary continental breakfast served daily from 7:00 AM to noon, relax on our famous rooftop restaurant with panoramic Pyramid views, or indulge in our onsite spa with massages, body treatments, and facials.
-                </p>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 28 }}>
-                  {[
-                    { icon: '📍', label: 'Address', value: 'El Fokahaa St, Nazlet El Batran, Giza' },
-                    { icon: '📱', label: 'Phone / WhatsApp', value: '+20 101 815 7153' },
-                    { icon: '🕐', label: 'Check-in', value: '12:00 PM – 12:00 AM' },
-                    { icon: '🕙', label: 'Check-out', value: 'Until 10:00 AM' },
-                    { icon: '✈️', label: 'From Airport', value: '17.3 miles (Cairo Int\'l)' },
-                    { icon: '🔺', label: 'From Pyramids', value: '5-min drive · 2.1 mi' },
-                  ].map((f) => (
-                    <div key={f.label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(201,168,76,0.12)', padding: '12px 14px' }}>
-                      <div style={{ fontFamily: F, fontSize: '0.62rem', fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 4 }}>{f.icon} {f.label}</div>
-                      <div style={{ fontFamily: F, fontSize: '0.85rem', color: 'var(--sand-2)' }}>{f.value}</div>
-                    </div>
-                  ))}
-                </div>
-
-                <a href="https://wa.me/201018157153" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ textDecoration: 'none' }}>Contact on WhatsApp</a>
-              </div>
-            </ScrollObserver>
-
-            {/* Right — amenities */}
-            <ScrollObserver>
-              <div>
-                <div style={{ fontFamily: F, fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 20 }}>Hotel Facilities</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                  {[
-                    { icon: '🍳', text: 'Free Breakfast Daily' },
-                    { icon: '📶', text: 'Free WiFi All Areas' },
-                    { icon: '🅿️', text: 'Free Parking' },
-                    { icon: '🌅', text: 'Rooftop Restaurant' },
-                    { icon: '💆', text: 'Spa & Massages' },
-                    { icon: '🛁', text: 'Hot Tub / Jacuzzi' },
-                    { icon: '🚗', text: 'Airport Transfer' },
-                    { icon: '🐾', text: 'Pets Allowed' },
-                    { icon: '🏪', text: 'Mini Market On-Site' },
-                    { icon: '💱', text: 'Currency Exchange' },
-                    { icon: '🧳', text: 'Luggage Storage' },
-                    { icon: '🔒', text: '24-Hour Security' },
-                    { icon: '🌿', text: 'Allergy-Free Rooms' },
-                    { icon: '💈', text: 'Barber / Beauty Shop' },
-                    { icon: '🗺️', text: 'Tour Desk' },
-                    { icon: '🛗', text: 'Lift / Elevator' },
-                  ].map((f) => (
-                    <div key={f.text} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(201,168,76,0.1)', padding: '10px 12px' }}>
-                      <span style={{ fontSize: '1rem', flexShrink: 0 }}>{f.icon}</span>
-                      <span style={{ fontFamily: F, fontSize: '0.85rem', color: 'var(--sand-2)' }}>{f.text}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </ScrollObserver>
-          </div>
-        </div>
-      </section>
-
-      {/* ══ AIRPORT TRANSFER SECTION ══ */}
-      <section id="airport-transfer" style={{ padding: '80px 24px', background: 'linear-gradient(180deg, #080d1a 0%, var(--navy) 100%)' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <ScrollObserver>
             <SectionHeading
-              label="Private Airport Transfer"
-              title="Luxury Car from Cairo Airport"
-              subtitle="Arrive in comfort. Our professional driver meets you at Cairo International Airport — all our staff and drivers speak fluent English."
+              label="Exclusive Travel Services"
+              title="Tailored Luxury Egypt Gateways"
+              subtitle="Est. 2005. We coordinate all aspect of your journey with meticulous attention to detail and five-star standards."
             />
           </ScrollObserver>
 
-          <ScrollObserver>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
-
-              {/* Transfer card */}
-              <div style={{ background: 'linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)', border: '1px solid rgba(201,168,76,0.25)', padding: '36px 32px', position: 'relative', overflow: 'hidden' }}>
-                <div style={{ position: 'absolute', top: 0, right: 0, background: 'var(--gold)', color: 'var(--navy)', fontFamily: F, fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', padding: '6px 18px' }}>ONE WAY</div>
-                <div style={{ fontSize: '3rem', marginBottom: 16 }}>🚗</div>
-                <h3 className="font-heading" style={{ fontSize: '1.4rem', fontWeight: 600, color: '#fff', marginBottom: 8 }}>Airport ↔ Hotel Transfer</h3>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 20 }}>
-                  <span className="font-heading" style={{ fontSize: '2.8rem', color: 'var(--gold)', fontWeight: 700 }}>$22</span>
-                  <span style={{ fontFamily: F, fontSize: '0.9rem', color: 'var(--sand-3)' }}>per trip (one way)</span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 28 }}>
-                  {[
-                    { icon: '✅', text: 'Private luxury car — no shared rides' },
-                    { icon: '🗣️', text: 'English-speaking professional driver' },
-                    { icon: '✈️', text: 'Meet & greet at Cairo International Airport' },
-                    { icon: '🧳', text: 'Luggage assistance included' },
-                    { icon: '🕐', text: 'Available 24 hours, any flight time' },
-                    { icon: '🔄', text: 'Book return trip for same price' },
-                  ].map((item) => (
-                    <div key={item.text} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                      <span style={{ fontSize: '0.9rem', flexShrink: 0, marginTop: 2 }}>{item.icon}</span>
-                      <span style={{ fontFamily: F, fontSize: '0.9rem', color: 'var(--sand-2)', lineHeight: 1.5 }}>{item.text}</span>
-                    </div>
-                  ))}
-                </div>
-                <a href="https://wa.me/201018157153?text=Hi%2C%20I%20would%20like%20to%20book%20an%20airport%20transfer" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-block' }}>
-                  Book Transfer on WhatsApp
-                </a>
-              </div>
-
-              {/* Info panel */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                <div style={{ background: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.2)', padding: '28px 24px' }}>
-                  <div style={{ fontFamily: F, fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 12 }}>Why Our Transfer?</div>
-                  <p style={{ fontFamily: F, fontSize: '0.95rem', color: 'var(--sand-2)', lineHeight: 1.8 }}>
-                    After a long flight, the last thing you want is to negotiate with taxi drivers or wait for a shared shuttle. Our driver will be waiting for you with a name sign, ready to take you straight to Venus Hotel in a clean, air-conditioned luxury car.
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24 }}>
+            {[
+              {
+                icon: '🔑',
+                title: 'Hotel Reservations',
+                desc: 'Handpicked 5-star sanctuaries, Nile view suites, historic palaces, and exclusive Red Sea beach beachfronts at special agency rates.'
+              },
+              {
+                icon: '🔺',
+                title: 'Private Guided Tours',
+                desc: 'Expert bilingual Egyptologists guiding you in private modern luxury vehicles through Cairo, Luxor, Aswan, Giza, and Alexandria.'
+              },
+              {
+                icon: '🚗',
+                title: 'Luxury Transportation',
+                desc: 'Chauffeur-driven premium cars, secure airport transfers with English-speaking VIP drivers, and transfers across all domestic regions.'
+              },
+              {
+                icon: '🗺️',
+                title: 'Full Trip Planning',
+                desc: 'Bespoke custom itineraries, dining reservations, flights, domestic cruises, and round-the-clock concierge help since 2005.'
+              }
+            ].map((srv, i) => (
+              <ScrollObserver key={i} className={`delay-${(i + 1) * 100}`}>
+                <div
+                  className="card shimmer-wrap"
+                  style={{
+                    padding: '40px 32px',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    background: 'linear-gradient(160deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
+                    border: '1px solid rgba(201,168,76,0.15)',
+                    transition: 'all 0.35s ease'
+                  }}
+                >
+                  <div className="icon-box" style={{ marginBottom: 24, fontSize: '1.6rem' }}>
+                    {srv.icon}
+                  </div>
+                  <h3
+                    className="font-heading"
+                    style={{
+                      fontSize: '1.35rem',
+                      color: '#fff',
+                      marginBottom: 12,
+                      fontWeight: 500
+                    }}
+                  >
+                    {srv.title}
+                  </h3>
+                  <p
+                    style={{
+                      fontSize: '0.92rem',
+                      color: 'var(--sand-2)',
+                      lineHeight: 1.7,
+                      margin: 0
+                    }}
+                  >
+                    {srv.desc}
                   </p>
                 </div>
-                <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(201,168,76,0.15)', padding: '28px 24px' }}>
-                  <div style={{ fontFamily: F, fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>Transfer Details</div>
-                  {[
-                    { label: 'Distance', value: 'Cairo Airport → Hotel: ~17 miles' },
-                    { label: 'Duration', value: 'Approx. 35–50 minutes' },
-                    { label: 'Price', value: '$22 one way (both directions)' },
-                    { label: 'Car Type', value: 'Private luxury sedan / SUV' },
-                    { label: 'Driver', value: 'English-speaking, professional' },
-                    { label: 'Availability', value: '24/7 — any arrival time' },
-                  ].map((d) => (
-                    <div key={d.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '10px 0', borderBottom: '1px solid rgba(201,168,76,0.08)', gap: 16 }}>
-                      <span style={{ fontFamily: F, fontSize: '0.8rem', fontWeight: 600, color: 'var(--sand-3)', flexShrink: 0 }}>{d.label}</span>
-                      <span style={{ fontFamily: F, fontSize: '0.85rem', color: 'var(--sand-2)', textAlign: 'right' }}>{d.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </ScrollObserver>
-        </div>
-      </section>
-
-      {/* ══ TOURS SECTION ══ */}
-      <section id="tours" style={{ padding: '96px 24px', background: 'linear-gradient(180deg, var(--navy) 0%, #080d1a 100%)' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-          <ScrollObserver>
-            <SectionHeading
-              label="Daily Tours from the Hotel"
-              title="Explore All of Egypt"
-              subtitle="Every tour departs from our hotel in a private air-conditioned luxury car. All our staff and drivers speak fluent English."
-            />
-          </ScrollObserver>
-
-          {/* Filters */}
-          <ScrollObserver>
-            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(201,168,76,0.2)', padding: '28px 32px', marginBottom: 48 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 32 }}>
-                <div>
-                  <div style={{ fontFamily: F, fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span>📍</span> Tourism
-                  </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                    {DESTINATIONS.map((d) => (
-                      <button key={d} onClick={() => setDest(d)} className={`filter-pill${dest === d ? ' active' : ''}`}>{d}</button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontFamily: F, fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span>🕐</span> Tour Duration
-                  </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                    {TOUR_TYPES.map((t) => (
-                      <button key={t} onClick={() => setType(t)} className={`filter-pill${type === t ? ' active' : ''}`}>{t}</button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontFamily: F, fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span>📅</span> Trip Date
-                  </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                    <input type="date" style={{ background: 'rgba(255,255,255,0.03)', color: 'var(--sand-2)', border: '1px solid rgba(201,168,76,0.3)', padding: '6px 12px', borderRadius: 4, fontFamily: F, fontSize: '0.85rem', outline: 'none' }} />
-                  </div>
-                </div>
-              </div>
-              <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid rgba(201,168,76,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-                <span style={{ fontFamily: F, fontSize: '0.85rem', color: 'var(--sand-2)' }}>
-                  Showing <strong style={{ color: 'var(--gold)' }}>{filtered.length}</strong> of {tours.length} tours
-                </span>
-                {(dest !== 'All' || type !== 'All') && (
-                  <button onClick={() => { setDest('All'); setType('All'); }} style={{ fontFamily: F, fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--sand-3)', background: 'none', border: 'none', cursor: 'pointer', transition: 'color 0.2s' }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--gold)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--sand-3)')}>
-                    Clear filters ×
-                  </button>
-                )}
-              </div>
-            </div>
-          </ScrollObserver>
-
-          {filtered.length > 0 ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 24 }}>
-              {filtered.map((tour, i) => <TourCard key={tour.id} tour={tour} index={i} />)}
-            </div>
-          ) : (
-            <div style={{ textAlign: 'center', padding: '64px 0' }}>
-              <p className="font-sub" style={{ fontSize: '1.3rem', fontStyle: 'italic', color: 'var(--sand-2)', marginBottom: 20 }}>No tours match your selection.</p>
-              <button onClick={() => { setDest('All'); setType('All'); }} className="btn-secondary">Show All Tours</button>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* ══ INCLUSIONS BANNER ══ */}
-      <section style={{ padding: '56px 24px', background: 'rgba(201,168,76,0.04)', borderTop: '1px solid rgba(201,168,76,0.14)', borderBottom: '1px solid rgba(201,168,76,0.14)' }}>
-        <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-          <ScrollObserver>
-            <div style={{ fontFamily: F, fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gold)', textAlign: 'center', marginBottom: 32 }}>Every Tour Includes</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 32 }}>
-              {[
-                { icon: '🚗', title: 'Private Luxury Car', desc: 'Air-conditioned, comfortable & modern' },
-                { icon: '🗣️', title: 'Full English Team', desc: 'All hotel staff and drivers speak fluent English — from reception to your tour guide.' },
-                { icon: '🍽️', title: 'Lunch Included', desc: 'Local restaurant, authentic cuisine' },
-                { icon: '🎫', title: 'All Tickets', desc: 'Entrance fees & transfers covered' },
-                { icon: '👨‍🏫', title: 'Expert Guide', desc: 'Licensed Egyptologist guide' },
-              ].map((f) => (
-                <div key={f.title} style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '2rem', marginBottom: 10 }}>{f.icon}</div>
-                  <div className="font-heading" style={{ fontSize: '1rem', color: 'var(--sand)', marginBottom: 6 }}>{f.title}</div>
-                  <div style={{ fontFamily: F, fontSize: '0.85rem', color: 'var(--sand-3)' }}>{f.desc}</div>
-                </div>
-              ))}
-            </div>
-          </ScrollObserver>
-        </div>
-      </section>
-
-      {/* ══ PROMO BANNER ══ */}
-      <section style={{ padding: '32px 24px', background: 'linear-gradient(135deg, rgba(201,168,76,0.12) 0%, rgba(201,168,76,0.04) 100%)', borderTop: '1px solid rgba(201,168,76,0.25)', borderBottom: '1px solid rgba(201,168,76,0.25)' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
-            <span style={{ fontSize: '2rem' }}>🎁</span>
-            <div>
-              <div className="font-heading" style={{ fontSize: 'clamp(1.1rem, 3vw, 1.5rem)', color: 'var(--gold)', marginBottom: 4 }}>Book 3 Trips — Get the 4th FREE</div>
-              <p style={{ fontFamily: 'var(--font-inter), Inter, sans-serif', fontSize: '0.9rem', color: 'var(--sand-2)' }}>Ask the hotel about your free tour when booking 3 or more trips.</p>
-            </div>
-            <a href="https://wa.me/201018157153?text=Hi%2C%20I%20want%20to%20book%203%20tours%20and%20get%20the%204th%20free" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ textDecoration: 'none' }}>Claim Offer</a>
-          </div>
-        </div>
-      </section>
-
-      {/* ══ EGYPT EXPLORATION GUIDE & TRAVEL BLOG ══ */}
-      <EgyptBlog onSelectDestination={setDest} />
-
-      {/* ══ ROOMS SECTION ══ */}
-      <section id="hotel" style={{ padding: '96px 24px', background: 'linear-gradient(180deg, #080d1a 0%, var(--navy) 100%)' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-          <ScrollObserver>
-            <SectionHeading
-              label="Accommodation"
-              title="Luxury Hotel Rooms"
-              subtitle="16 beautifully designed rooms — from cozy standard rooms to the Presidential Suite, all steps from the Giza Pyramids."
-            />
-          </ScrollObserver>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
-            {rooms.map((room, i) => <RoomCard key={room.id} room={room} index={i} />)}
-          </div>
-        </div>
-      </section>
-
-      {/* ══ ROOFTOP RESTAURANT SECTION ══ */}
-      <section id="rooftop" style={{ padding: '96px 24px', background: 'linear-gradient(180deg, var(--navy) 0%, #080d1a 100%)', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: "url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1600&q=80&fit=crop')", backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.07 }} />
-        <div style={{ maxWidth: 1280, margin: '0 auto', position: 'relative', zIndex: 1 }}>
-          <ScrollObserver>
-            <SectionHeading
-              label="Rooftop Experience"
-              title="Sky-High Dining with Pyramid Views"
-              subtitle="Our rooftop restaurant sits at the top of the hotel with breathtaking panoramic views of all three Giza Pyramids and the ancient skyline of Old Cairo."
-            />
-          </ScrollObserver>
-
-          <ScrollObserver>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 32, alignItems: 'start' }}>
-
-              {/* Left — description */}
-              <div style={{ background: 'linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)', border: '1px solid rgba(201,168,76,0.25)', padding: '40px 36px' }}>
-                <div style={{ fontSize: '3.5rem', marginBottom: 20 }}>🌅</div>
-                <h3 className="font-heading" style={{ fontSize: '1.6rem', fontWeight: 600, color: '#fff', marginBottom: 12 }}>The Rooftop Restaurant</h3>
-                <p style={{ fontFamily: F, fontSize: '0.95rem', color: 'var(--sand-2)', lineHeight: 1.85, marginBottom: 24 }}>
-                  Perched on the top floor of Venus Hotel, our rooftop restaurant is one of the most unique dining experiences in all of Egypt. Enjoy fresh food, cold juices, hot drinks, and a full menu — all while gazing at the iconic Giza Pyramids and the sprawling cityscape of Old Cairo stretching to the horizon.
-                </p>
-                <p style={{ fontFamily: F, fontSize: '0.95rem', color: 'var(--sand-2)', lineHeight: 1.85, marginBottom: 28 }}>
-                  Whether you want a relaxed breakfast as the sun rises over the pyramids, a leisurely lunch, or a magical dinner under the stars — the rooftop is open all day and serves everything from Egyptian classics to international dishes, fresh-squeezed juices, smoothies, and more.
-                </p>
-                <a href="https://wa.me/201018157153?text=Hi%2C%20I%20would%20like%20to%20reserve%20a%20rooftop%20table" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-block' }}>
-                  Reserve a Table
-                </a>
-              </div>
-
-              {/* Right — features */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                {/* View highlight */}
-                <div style={{ background: 'rgba(201,168,76,0.07)', border: '1px solid rgba(201,168,76,0.3)', padding: '28px 24px' }}>
-                  <div style={{ fontFamily: F, fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 12 }}>The View</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    {[
-                      { icon: '🔺', text: 'Panoramic view of all 3 Giza Pyramids' },
-                      { icon: '🕌', text: 'Old Cairo skyline & ancient minarets' },
-                      { icon: '🌅', text: 'Stunning sunrise & sunset scenery' },
-                      { icon: '🌙', text: 'Magical night views of illuminated pyramids' },
-                    ].map((v) => (
-                      <div key={v.text} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <span style={{ fontSize: '1.1rem' }}>{v.icon}</span>
-                        <span style={{ fontFamily: F, fontSize: '0.9rem', color: 'var(--sand-2)' }}>{v.text}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Menu highlights */}
-                <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(201,168,76,0.15)', padding: '28px 24px' }}>
-                  <div style={{ fontFamily: F, fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>What We Serve</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                    {[
-                      { icon: '🥗', text: 'Fresh Salads' },
-                      { icon: '🍲', text: 'Egyptian Dishes' },
-                      { icon: '🥩', text: 'Grilled Meats' },
-                      { icon: '🍕', text: 'International Food' },
-                      { icon: '🥤', text: 'Fresh Juices' },
-                      { icon: '🧃', text: 'Smoothies' },
-                      { icon: '☕', text: 'Hot Drinks & Coffee' },
-                      { icon: '🍰', text: 'Desserts & Sweets' },
-                    ].map((m) => (
-                      <div key={m.text} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(201,168,76,0.08)' }}>
-                        <span style={{ fontSize: '1rem' }}>{m.icon}</span>
-                        <span style={{ fontFamily: F, fontSize: '0.82rem', color: 'var(--sand-2)' }}>{m.text}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Hours */}
-                <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(201,168,76,0.15)', padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <span style={{ fontSize: '2rem' }}>🕐</span>
-                  <div>
-                    <div style={{ fontFamily: F, fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 4 }}>Open Daily</div>
-                    <div style={{ fontFamily: F, fontSize: '1rem', color: 'var(--sand)', fontWeight: 500 }}>7:00 AM — 11:00 PM</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </ScrollObserver>
-        </div>
-      </section>
-
-      {/* ══ WHY CHOOSE US ══ */}
-      <section style={{ padding: '96px 24px', background: 'linear-gradient(180deg, #080d1a 0%, var(--navy) 100%)' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-          <ScrollObserver>
-            <SectionHeading label="Our Promise" title="Why Black Pyramids Tours?" />
-          </ScrollObserver>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>
-            {[
-              { icon: '🔺', title: 'Pyramid Proximity', desc: 'Our hotel is located steps from the iconic Giza Pyramids — wake up to one of the Seven Wonders of the Ancient World.' },
-              { icon: '🚗', title: 'Private Luxury Transport', desc: 'Every tour uses a private air-conditioned luxury car. No shared buses, no waiting — just you and your guide.' },
-              { icon: '🗣️', title: 'Full English Team', desc: 'Every member of our team — hotel staff, drivers, and guides — speaks fluent English to make your stay seamless.' },
-              { icon: '🌅', title: 'Rooftop Restaurant', desc: 'Dine with a view of all three Giza Pyramids and Old Cairo from our rooftop restaurant, open all day every day.' },
-              { icon: '✈️', title: 'Airport Transfer $22', desc: 'Private luxury car from Cairo Airport to the hotel — or back — for just $22 one way. English-speaking driver, 24/7.' },
-              { icon: '⭐', title: '4.9 Star Rated', desc: 'Hundreds of guests from around the world rate us 4.9 stars. Your satisfaction is our highest priority.' },
-            ].map((f, i) => (
-              <ScrollObserver key={i}>
-                <FeatureCard icon={f.icon} title={f.title} desc={f.desc} />
               </ScrollObserver>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ══ STAFF SECTION ══ */}
-      <section id="team" style={{ padding: '96px 24px', background: 'linear-gradient(180deg, var(--navy) 0%, #080d1a 100%)' }}>
+      {/* ── 2. TOURS SECTION (6 cards) ── */}
+      <section id="tours" style={{ padding: '112px 24px 80px', background: '#1e1e1e' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
           <ScrollObserver>
             <SectionHeading
-              label="Meet Our Team"
-              title="The People Behind Black Pyramids Tours"
-              subtitle="Our entire team — hotel staff, guides, and drivers — all speak fluent English and are here to make your Egypt experience truly unforgettable."
+              label="Signature Guided Journeys"
+              title="Curated Private Tours"
+              subtitle="All transfers are private and chauffeured. Licensed English-speaking guides and authentic local lunch experiences are fully integrated."
             />
           </ScrollObserver>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 24 }}>
-            {teamMembers.map((member, i) => <StaffCard key={member.id} member={member} index={i} />)}
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 32 }}>
+            {featuredTours.map((tour, index) => (
+              <ScrollObserver key={tour.id} className={`delay-${((index % 3) + 1) * 100}`}>
+                <TourCard tour={tour} />
+              </ScrollObserver>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ══ CTA ══ */}
-      <section id="contact" style={{ padding: '112px 24px', position: 'relative', overflow: 'hidden', background: '#080d1a' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, rgba(201,168,76,0.06) 0%, transparent 70%)' }} />
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, rgba(201,168,76,0.35), transparent)' }} />
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, rgba(201,168,76,0.35), transparent)' }} />
-        <ScrollObserver>
-          <div style={{ maxWidth: 700, margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
-            <div style={{ fontFamily: F, fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 20 }}>Start Your Journey</div>
-            <h2 className="font-heading" style={{ fontSize: 'clamp(2rem, 4vw, 3.2rem)', fontWeight: 600, color: '#fff', marginBottom: 16 }}>Ready to Discover Egypt?</h2>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 20 }}>
-              <div style={{ width: 60, height: 1, background: 'linear-gradient(90deg, transparent, var(--gold))' }} />
-              <span style={{ color: 'var(--gold)', fontSize: 8 }}>◆</span>
-              <div style={{ width: 60, height: 1, background: 'linear-gradient(90deg, var(--gold), transparent)' }} />
+      {/* ── 3. HOTELS SECTION (6 hotels + Star rating filter) ── */}
+      <section id="hotels" style={{ padding: '112px 24px 80px', background: 'linear-gradient(180deg, #1e1e1e 0%, var(--charcoal) 100%)' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+          <ScrollObserver>
+            <SectionHeading
+              label="Luxury Sanctuaries"
+              title="Handpicked 5-Star Hotels"
+              subtitle="Agoda & Booking award winners. Discover legendary palaces and beach sanctuaries across historic Egyptian settings."
+            />
+          </ScrollObserver>
+
+          {/* Star Filter Navigation */}
+          <ScrollObserver>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                gap: 12,
+                marginBottom: 48,
+                flexWrap: 'wrap'
+              }}
+            >
+              {[
+                { val: 'All', label: 'Show All' },
+                { val: 5, label: '5★ Luxury' },
+                { val: 4, label: '4★ Superior' },
+                { val: 3, label: '3★ Boutique' }
+              ].map((pill) => {
+                const isActive = selectedStars === pill.val;
+                return (
+                  <button
+                    key={pill.label}
+                    onClick={() => setSelectedStars(pill.val as any)}
+                    className={`filter-pill ${isActive ? 'active' : ''}`}
+                  >
+                    {pill.label}
+                  </button>
+                );
+              })}
             </div>
-            <p className="font-sub" style={{ fontSize: '1.2rem', fontStyle: 'italic', color: 'var(--sand-2)', marginBottom: 40, lineHeight: 1.75 }}>
-              Book your room, airport transfer, and daily tours today. Our team will craft the perfect Egyptian adventure for you.
+          </ScrollObserver>
+
+          {/* Hotels Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 32 }}>
+            {filteredHotels.length > 0 ? (
+              filteredHotels.map((hotel, index) => (
+                <ScrollObserver key={hotel.id} className={`delay-${((index % 3) + 1) * 100}`}>
+                  <HotelCard
+                    hotel={hotel}
+                    onSelectRoom={(h) => setSelectedHotelForModal(h)}
+                  />
+                </ScrollObserver>
+              ))
+            ) : (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px' }}>
+                <p className="font-sub" style={{ fontSize: '1.3rem', fontStyle: 'italic', color: 'var(--sand-3)' }}>
+                  We currently offer selected 4★ and 5★ luxury properties. No 3★ boutique properties are featured in our current luxury catalogue.
+                </p>
+                <button
+                  onClick={() => setSelectedStars('All')}
+                  className="btn-secondary"
+                  style={{ marginTop: 20 }}
+                >
+                  Show All Hotels
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 4. DESTINATIONS SECTION (8 locations + Zoom hovers) ── */}
+      <section id="destinations" style={{ padding: '112px 24px 80px', background: '#1c1c1c' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+          <ScrollObserver>
+            <SectionHeading
+              label="Inspiring Travel Blocks"
+              title="Explore Iconic Destinations"
+              subtitle="From the buzzing historic streets of Cairo to the mystical sand dunes of Siwa, discover the majestic locations we guide you through."
+            />
+          </ScrollObserver>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+              gap: 20
+            }}
+          >
+            {topDestinations.map((dest, idx) => (
+              <ScrollObserver key={dest.id} className={`delay-${((idx % 4) + 1) * 100}`}>
+                <div
+                  className="shimmer-wrap"
+                  style={{
+                    position: 'relative',
+                    height: 320,
+                    overflow: 'hidden',
+                    border: '1px solid rgba(201,168,76,0.18)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <img
+                    src={dest.image}
+                    alt={dest.name}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      transition: 'transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.1) rotate(1deg)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1) rotate(0)';
+                    }}
+                  />
+                  
+                  {/* Subtle dark gradient overlay */}
+                  <div
+                    className="img-overlay"
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      pointerEvents: 'none'
+                    }}
+                  />
+
+                  {/* Text Details overlay */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      padding: 24,
+                      zIndex: 3
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                      <span style={{ fontSize: '1.4rem' }}>{dest.emoji}</span>
+                      <h4
+                        className="font-heading"
+                        style={{
+                          fontSize: '1.6rem',
+                          color: '#fff',
+                          margin: 0,
+                          fontWeight: 500
+                        }}
+                      >
+                        {dest.name}
+                      </h4>
+                    </div>
+                    <p
+                      style={{
+                        fontFamily: 'var(--font-inter), Inter, sans-serif',
+                        fontSize: '0.75rem',
+                        color: 'var(--sand-2)',
+                        margin: 0,
+                        letterSpacing: '0.02em',
+                        lineHeight: 1.4
+                      }}
+                    >
+                      {dest.tagline}
+                    </p>
+                  </div>
+                </div>
+              </ScrollObserver>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 5. WHY CHOOSE US (Stats & Promises) ── */}
+      <section id="why-us" style={{ padding: '112px 24px 80px', background: 'linear-gradient(180deg, #1c1c1c 0%, var(--charcoal) 100%)' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+          <ScrollObserver>
+            <SectionHeading
+              label="Our Elite Standards"
+              title="The Gateway Distinction"
+              subtitle="Since 2005, we have provided an unbeatable travel experience focusing on comfort, safety, and luxury details."
+            />
+          </ScrollObserver>
+
+          {/* Stats Bar */}
+          <ScrollObserver>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: 24,
+                marginBottom: 64,
+                borderTop: '1px solid rgba(201, 168, 76, 0.15)',
+                borderBottom: '1px solid rgba(201, 168, 76, 0.15)',
+                padding: '40px 0',
+                background: 'rgba(255,255,255,0.01)'
+              }}
+            >
+              {[
+                { val: '20+', label: 'Years Experience' },
+                { val: '15,000+', label: 'Distinguished Guests' },
+                { val: '50+', label: 'Certified Elite Guides' },
+                { val: '4.9★', label: 'Average Guest Rating' }
+              ].map((stat) => (
+                <div key={stat.label} style={{ textAlign: 'center', padding: '0 16px' }}>
+                  <div
+                    className="font-heading gradient-text"
+                    style={{
+                      fontSize: 'clamp(2.5rem, 5vw, 3.8rem)',
+                      fontWeight: 700,
+                      lineHeight: 1,
+                      marginBottom: 8
+                    }}
+                  >
+                    {stat.val}
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: 'var(--font-inter), Inter, sans-serif',
+                      fontSize: '0.72rem',
+                      fontWeight: 600,
+                      letterSpacing: '0.2em',
+                      textTransform: 'uppercase',
+                      color: 'var(--sand-2)'
+                    }}
+                  >
+                    {stat.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollObserver>
+
+          {/* Key Advantages Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 32 }}>
+            {[
+              {
+                icon: '🔺',
+                title: 'Breathtaking Proximity',
+                desc: 'Experience hotels with direct, majestic views of the Giza Pyramids and key monuments from private terraces.'
+              },
+              {
+                icon: '🚗',
+                title: 'Exclusive Chauffeur VIP Fleet',
+                desc: 'Chauffeured inside luxurious, high-end private air-conditioned cars with experienced, secure drivers.'
+              },
+              {
+                icon: '🗣️',
+                title: 'Fluent English Personnel',
+                desc: 'Every single representative, guide, driver, and coordinator speaks flawless English to guarantee seamless communication.'
+              }
+            ].map((adv, idx) => (
+              <ScrollObserver key={idx} className={`delay-${(idx + 1) * 100}`}>
+                <div
+                  className="card"
+                  style={{
+                    padding: '36px',
+                    textAlign: 'center',
+                    background: 'rgba(255,255,255,0.02)',
+                    border: '1px solid rgba(201,168,76,0.18)',
+                    transition: 'all 0.35s ease'
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: '2.5rem',
+                      marginBottom: 16,
+                      display: 'inline-block'
+                    }}
+                  >
+                    {adv.icon}
+                  </div>
+                  <h3
+                    className="font-heading"
+                    style={{
+                      fontSize: '1.25rem',
+                      color: 'var(--gold)',
+                      marginBottom: 12
+                    }}
+                  >
+                    {adv.title}
+                  </h3>
+                  <p
+                    style={{
+                      fontSize: '0.9rem',
+                      color: 'var(--sand-2)',
+                      lineHeight: 1.7,
+                      margin: 0
+                    }}
+                  >
+                    {adv.desc}
+                  </p>
+                </div>
+              </ScrollObserver>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 6. TESTIMONIALS SECTION (3 guests) ── */}
+      <section id="testimonials" style={{ padding: '112px 24px 80px', background: '#1c1c1c' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+          <ScrollObserver>
+            <SectionHeading
+              label="Voices of Excellence"
+              title="What Our Distinguished Guests Say"
+              subtitle="Real guest reviews from around the globe, outlining our commitment to elite pharaonic hospitality."
+            />
+          </ScrollObserver>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 32 }}>
+            {guestTestimonials.map((test, index) => (
+              <ScrollObserver key={test.id} className={`delay-${(index + 1) * 100}`}>
+                <div
+                  className="card"
+                  style={{
+                    padding: '40px 32px',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    background: 'rgba(255,255,255,0.02)',
+                    border: '1px solid rgba(201,168,76,0.15)'
+                  }}
+                >
+                  {/* Stars rating */}
+                  <div style={{ marginBottom: 16 }}>
+                    {Array.from({ length: test.rating }).map((_, i) => (
+                      <span key={i} style={{ color: 'var(--gold)', fontSize: '0.95rem', marginRight: 2 }}>★</span>
+                    ))}
+                  </div>
+
+                  {/* Review Text */}
+                  <p
+                    style={{
+                      fontSize: '0.98rem',
+                      fontStyle: 'italic',
+                      color: 'var(--sand)',
+                      lineHeight: 1.7,
+                      marginBottom: 28,
+                      flexGrow: 1
+                    }}
+                  >
+                    "{test.text}"
+                  </p>
+
+                  {/* Guest Profile Row */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16, borderTop: '1px solid rgba(201,168,76,0.1)', paddingTop: 20 }}>
+                    <img
+                      src={test.avatar}
+                      alt={test.name}
+                      style={{
+                        width: 52,
+                        height: 52,
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                        border: '1.5px solid var(--gold)'
+                      }}
+                    />
+                    <div>
+                      <h4
+                        className="font-heading"
+                        style={{
+                          fontSize: '1.1rem',
+                          color: '#fff',
+                          margin: 0,
+                          fontWeight: 500
+                        }}
+                      >
+                        {test.name}
+                      </h4>
+                      <span
+                        style={{
+                          fontSize: '0.72rem',
+                          fontFamily: 'var(--font-inter), sans-serif',
+                          color: 'var(--sand-3)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          marginTop: 2
+                        }}
+                      >
+                        {test.flag} {test.country}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </ScrollObserver>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 7. NEWSLETTER & OFFERS BANNER ── */}
+      <section style={{ padding: '80px 24px', background: 'linear-gradient(135deg, rgba(92,26,26,0.2) 0%, rgba(26,26,26,0.85) 100%)', borderTop: '1px solid rgba(201,168,76,0.2)', borderBottom: '1px solid rgba(201,168,76,0.2)' }}>
+        <div style={{ maxWidth: 860, margin: '0 auto', textAlign: 'center' }}>
+          <ScrollObserver>
+            <span style={{ fontSize: '2.5rem', marginBottom: 12, display: 'inline-block' }}>🎁</span>
+            <h3 className="font-heading" style={{ fontSize: '1.8rem', color: 'var(--gold)', marginBottom: 8, fontWeight: 500 }}>
+              Plan a Custom Expedition
+            </h3>
+            <p className="font-sub" style={{ fontSize: '1.1rem', fontStyle: 'italic', color: 'var(--sand)', marginBottom: 28, lineHeight: 1.6 }}>
+              "Est. 2005 — Book any 3 signature luxury guided tours and obtain the 4th tour completely complimentary!"
             </p>
+            <a
+              href="https://wa.me/201211385550?text=Hello%20Black%20Pyramids%20Tours%2C%20I%20would%20like%20to%20claim%20the%20Book%203%20Get%201%20Free%20tour%20promotion%21"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-burgundy"
+              style={{ textDecoration: 'none' }}
+            >
+              Claim Special Offer
+            </a>
+          </ScrollObserver>
+        </div>
+      </section>
+
+      {/* ── 8. EGYPT BLOG SECTION ── */}
+      {/* (Integrating an elegant preview section to fit design system) */}
+      <section id="blog" style={{ padding: '112px 24px 80px', background: 'var(--charcoal)' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+          <ScrollObserver>
+            <SectionHeading
+              label="Egypt Travel Insights"
+              title="The Pharaonic Gateway Blog"
+              subtitle="Practical luxury travel tips, historical deep-dives, and guides written by our native Egyptologist scholars."
+            />
+          </ScrollObserver>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 32 }}>
+            {[
+              {
+                title: "Deciphering the Giza Pyramids Complex",
+                date: "May 18, 2026",
+                desc: "An in-depth scholarly guide detailing standard historical controversies, opening schedules, and premium viewpoints.",
+                img: "https://images.unsplash.com/photo-1539768942893-daf53e448371?w=600&q=80&fit=crop"
+              },
+              {
+                title: "Luxor Temple Illuminated by Night",
+                date: "May 12, 2026",
+                desc: "Why visiting the historic colossal statues of Ancient Thebes after sunset yields the most atmospheric, luxury views.",
+                img: "https://images.unsplash.com/photo-1557821552-17105176677c?w=600&q=80&fit=crop"
+              },
+              {
+                title: "A Golden Sailing Guide to Nubian Aswan",
+                date: "April 29, 2026",
+                desc: "Chartering private classical felucca sailboats around historic Elephantine island granite cliffs and cataract regions.",
+                img: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=600&q=80&fit=crop"
+              }
+            ].map((post, index) => (
+              <ScrollObserver key={index} className={`delay-${(index + 1) * 100}`}>
+                <div
+                  className="card shimmer-wrap"
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: '100%',
+                    background: 'rgba(255,255,255,0.015)',
+                    border: '1px solid rgba(201,168,76,0.12)'
+                  }}
+                >
+                  <div style={{ height: 200, overflow: 'hidden', position: 'relative' }}>
+                    <img src={post.img} alt={post.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                  <div style={{ padding: 24, display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                    <span style={{ fontSize: '0.72rem', fontFamily: 'var(--font-inter), sans-serif', color: 'var(--gold)', letterSpacing: '0.05em' }}>
+                      {post.date}
+                    </span>
+                    <h4 className="font-heading" style={{ fontSize: '1.2rem', color: '#fff', margin: '8px 0 12px', fontWeight: 500, lineHeight: 1.3 }}>
+                      {post.title}
+                    </h4>
+                    <p style={{ fontSize: '0.88rem', color: 'var(--sand-2)', lineHeight: 1.6, margin: '0 0 20px', flexGrow: 1 }}>
+                      {post.desc}
+                    </p>
+                    <a
+                      href="/blog"
+                      style={{
+                        fontSize: '0.72rem',
+                        fontFamily: 'var(--font-inter), Inter, sans-serif',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        color: 'var(--gold)',
+                        letterSpacing: '0.1em',
+                        textDecoration: 'none',
+                        marginTop: 'auto',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6
+                      }}
+                    >
+                      Read Article <span>→</span>
+                    </a>
+                  </div>
+                </div>
+              </ScrollObserver>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 9. PRE-FOOTER CALL TO ACTION ── */}
+      <section id="contact" style={{ padding: '120px 24px', position: 'relative', overflow: 'hidden', background: '#121212', borderTop: '1px solid rgba(201,168,76,0.15)' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, rgba(201,168,76,0.04) 0%, transparent 70%)' }} />
+        <ScrollObserver>
+          <div style={{ maxWidth: 760, margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
+            <span style={{ fontFamily: 'var(--font-inter), Inter, sans-serif', fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gold)', display: 'block', marginBottom: 16 }}>
+              Embark on Luxury
+            </span>
+            <h2 className="font-heading" style={{ fontSize: 'clamp(2rem, 5vw, 3.2rem)', fontWeight: 400, color: '#fff', marginBottom: 16, lineHeight: 1.2 }}>
+              Ready to Explore Ancient Egypt?
+            </h2>
+            
+            <div className="gold-divider" style={{ margin: '20px 0 24px' }}>
+              <span>◆</span>
+            </div>
+
+            <p className="font-sub" style={{ fontSize: '1.2rem', fontStyle: 'italic', color: 'var(--sand-2)', marginBottom: 40, lineHeight: 1.75 }}>
+              Book exclusive accommodations, design custom private daily tours, and secure professional transport. Our English-speaking specialists will orchestrate the perfect Egyptian getaway.
+            </p>
+
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 16 }}>
-              <a href="#tours" className="btn-primary" style={{ textDecoration: 'none' }}>Browse Tours</a>
-              <a href="#airport-transfer" className="btn-secondary" style={{ textDecoration: 'none' }}>Airport Transfer</a>
-              <a href="mailto:info@venuspyramids.com" className="btn-secondary" style={{ textDecoration: 'none' }}>Email Us</a>
+              <a href="https://wa.me/201211385550?text=Hello%20Black%20Pyramids%20Tours%2C%20I%20would%20like%20to%20plan%20a%20luxury%20egypt%20trip%21" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ textDecoration: 'none' }}>
+                Chat via WhatsApp
+              </a>
+              <a href="#tours" className="btn-secondary" style={{ textDecoration: 'none' }}>
+                Browse Tours
+              </a>
+              <a href="mailto:info@blackpyramidsgateway.com" className="btn-secondary" style={{ textDecoration: 'none' }}>
+                Email Planning Team
+              </a>
             </div>
           </div>
         </ScrollObserver>
       </section>
 
-      {/* ══ FOOTER ══ */}
-      <footer style={{ background: '#040710', borderTop: '1px solid rgba(201,168,76,0.14)', padding: '64px 24px 32px' }}>
+      {/* ── 10. ELITE FOOTER ── */}
+      <footer style={{ background: '#0e0e0e', borderTop: '1px solid rgba(201,168,76,0.18)', padding: '80px 24px 40px' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 40, marginBottom: 48 }}>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 48, marginBottom: 64 }}>
+            
+            {/* Column 1: Brand Info */}
             <div>
-              <div style={{ marginBottom: 16 }}>
-                <img src="/logo.jfif" alt="Black Pyramids Tours" style={{ height: 44, width: 'auto', objectFit: 'contain' }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+                <svg width="34" height="34" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M50 10 L15 85 L50 85 Z" fill="url(#pyramid-gold-left-footer)" />
+                  <path d="M50 10 L85 85 L50 85 Z" fill="url(#pyramid-gold-right-footer)" />
+                  <path d="M50 10 L50 85" stroke="#DFCA7D" strokeWidth="1.5" />
+                  <defs>
+                    <linearGradient id="pyramid-gold-left-footer" x1="50" y1="10" x2="15" y2="85" gradientUnits="userSpaceOnUse">
+                      <stop offset="0%" stopColor="#DFCA7D" />
+                      <stop offset="100%" stopColor="#9B7D2F" />
+                    </linearGradient>
+                    <linearGradient id="pyramid-gold-right-footer" x1="50" y1="10" x2="85" y2="85" gradientUnits="userSpaceOnUse">
+                      <stop offset="0%" stopColor="#9B7D2F" />
+                      <stop offset="100%" stopColor="#5E4716" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
+                  <span className="font-heading" style={{ fontSize: '1rem', fontWeight: 700, letterSpacing: '0.12em', color: '#fff', textTransform: 'uppercase' }}>
+                    Black Pyramids
+                  </span>
+                  <span style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.58rem', fontWeight: 600, letterSpacing: '0.24em', color: 'var(--gold)', textTransform: 'uppercase' }}>
+                    Gateway
+                  </span>
+                </div>
               </div>
-              <p style={{ fontFamily: F, fontSize: '0.85rem', color: 'var(--sand-3)', lineHeight: 1.75 }}>
-                Your gateway to Egypt&apos;s ancient wonders. Luxury hotel, rooftop restaurant &amp; private daily tours near the Giza Pyramids.
+              
+              <p style={{ fontSize: '0.88rem', color: 'var(--sand-3)', lineHeight: 1.8, margin: 0 }}>
+                Your award-winning gate to Egypt's ancient wonders. Handpicked 5-star hotel reservations, private guided tours, and premium chauffeured luxury transport since 2005.
               </p>
             </div>
+
+            {/* Column 2: Quick Links */}
             <div>
-              <div style={{ fontFamily: F, fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>Quick Links</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {[['Home', '#'], ['Tours', '#tours'], ['Hotels', '#hotel'], ['Rooftop', '#rooftop'], ['Airport Transfer', '#airport-transfer'], ['Our Team', '#team'], ['Contact', '#contact']].map(([l, h]) => (
-                  <a key={l} href={h} style={{ fontFamily: F, fontSize: '0.85rem', color: 'var(--sand-3)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8, transition: 'color 0.2s' }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--gold)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--sand-3)')}>
-                    <span style={{ color: 'var(--gold)', fontSize: '0.45rem' }}>◆</span>{l}
-                  </a>
-                ))}
-              </div>
-            </div>
-            <div>
-              <div style={{ fontFamily: F, fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>Contact</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <h4 style={{ fontFamily: F, fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 24 }}>
+                Elite Services
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {[
-                  { icon: '📧', text: 'info@venuspyramids.com', href: 'mailto:info@venuspyramids.com' },
-                  { icon: '📱', text: '+20 101 815 7153', href: 'tel:+201018157153' },
-                  { icon: '💬', text: 'WhatsApp: +20 101 815 7153', href: 'https://wa.me/201018157153' },
-                  { icon: '📍', text: 'Giza, Egypt — Near Pyramids', href: '#' },
-                ].map((c) => (
-                  <a key={c.text} href={c.href} style={{ fontFamily: F, fontSize: '0.85rem', color: 'var(--sand-3)', display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', transition: 'color 0.2s', textDecoration: 'none' }}
+                  { label: 'Signature Tours', href: '#tours' },
+                  { label: 'Luxury Hotels', href: '#hotels' },
+                  { label: 'VIP Transportation', href: '#services' },
+                  { label: 'Top Destinations', href: '#destinations' },
+                  { label: 'Concierge Team', href: '/team' },
+                  { label: 'Travel Blog', href: '#blog' }
+                ].map((item) => (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    style={{
+                      fontSize: '0.85rem',
+                      color: 'var(--sand-2)',
+                      textDecoration: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      transition: 'color 0.2s'
+                    }}
                     onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--gold)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--sand-3)')}>
-                    <span>{c.icon}</span>{c.text}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--sand-2)')}
+                  >
+                    <span style={{ color: 'var(--gold)', fontSize: '0.5rem' }}>◆</span> {item.label}
                   </a>
                 ))}
               </div>
             </div>
+
+            {/* Column 3: Contact Info */}
             <div>
-              <div style={{ fontFamily: F, fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>Follow Us</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {['Facebook', 'Instagram', 'TripAdvisor'].map((s) => (
-                  <a key={s} href="#" style={{ fontFamily: F, fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--sand-3)', textDecoration: 'none', border: '1px solid rgba(201,168,76,0.18)', padding: '7px 14px', display: 'inline-block', transition: 'all 0.2s' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--gold)'; e.currentTarget.style.borderColor = 'var(--gold)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--sand-3)'; e.currentTarget.style.borderColor = 'rgba(201,168,76,0.18)'; }}>
-                    {s}
+              <h4 style={{ fontFamily: F, fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 24 }}>
+                Contact & Address
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {[
+                  { icon: '✉️', val: 'info@blackpyramidsgateway.com', href: 'mailto:info@blackpyramidsgateway.com' },
+                  { icon: '📞', val: '+20 101 815 7153', href: 'tel:+201211385550' },
+                  { icon: '💬', val: 'WhatsApp Chat Support', href: 'https://wa.me/201211385550' },
+                  { icon: '📍', val: 'Nazlet El Batran, Pyramids Giza', href: '#' }
+                ].map((c, i) => (
+                  <a
+                    key={i}
+                    href={c.href}
+                    style={{
+                      fontSize: '0.85rem',
+                      color: 'var(--sand-2)',
+                      textDecoration: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      transition: 'color 0.2s'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--gold)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--sand-2)')}
+                  >
+                    <span style={{ fontSize: '0.9rem' }}>{c.icon}</span> {c.val}
                   </a>
                 ))}
               </div>
             </div>
+
+            {/* Column 4: Newsletter */}
+            <div>
+              <h4 style={{ fontFamily: F, fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 24 }}>
+                Newsletter Sign Up
+              </h4>
+              <p style={{ fontSize: '0.85rem', color: 'var(--sand-3)', lineHeight: 1.6, marginBottom: 16 }}>
+                Subscribe to receive private offers, curated travel itineraries, and pharaonic history blogs directly in your inbox.
+              </p>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  showToast("Thank you for subscribing to our luxury Egypt updates!");
+                  (e.target as HTMLFormElement).reset();
+                }}
+                style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
+              >
+                <input
+                  type="email"
+                  required
+                  placeholder="Enter your luxury email"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    border: '1px solid rgba(201, 168, 76, 0.25)',
+                    color: 'var(--sand)',
+                    padding: '10px 14px',
+                    fontFamily: F,
+                    fontSize: '0.82rem',
+                    outline: 'none',
+                    borderRadius: 2
+                  }}
+                />
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  style={{
+                    padding: '10px',
+                    fontSize: '0.68rem',
+                    letterSpacing: '0.1em'
+                  }}
+                >
+                  Subscribe
+                </button>
+              </form>
+            </div>
+
           </div>
-          <div style={{ borderTop: '1px solid rgba(201,168,76,0.1)', paddingTop: 24, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-            <p style={{ fontFamily: F, fontSize: '0.82rem', color: 'var(--sand-3)' }}>© 2025 Black Pyramids Tours. All rights reserved.</p>
+
+          {/* Bottom Copyright */}
+          <div
+            style={{
+              borderTop: '1px solid rgba(201, 168, 76, 0.12)',
+              paddingTop: 32,
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 16
+            }}
+          >
+            <p style={{ fontSize: '0.82rem', color: 'var(--sand-3)', margin: 0 }}>
+              © 2026 Black Pyramids Tours · Est. 2005. All rights reserved.
+            </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ width: 20, height: 1, background: 'var(--gold)', display: 'inline-block' }} />
-              <span style={{ fontFamily: F, fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--gold)' }}>Luxury · Comfort · Egypt</span>
-              <span style={{ width: 20, height: 1, background: 'var(--gold)', display: 'inline-block' }} />
+              <span style={{ width: 16, height: 1, background: 'var(--gold)', display: 'inline-block' }} />
+              <span style={{ fontSize: '0.62rem', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--gold)' }}>
+                Your Gateway to Ancient Egypt
+              </span>
+              <span style={{ width: 16, height: 1, background: 'var(--gold)', display: 'inline-block' }} />
             </div>
           </div>
+
         </div>
       </footer>
+
+      {/* ── Dynamic Selected Hotel Room Modal ── */}
+      <HotelRoomModal
+        hotel={selectedHotelForModal}
+        onClose={() => setSelectedHotelForModal(null)}
+        onSelectRoomType={handleAddHotelRoomToTrip}
+      />
+
+      {/* ── Interactive Floating Trip Planner Drawer (Bottom-Left) ── */}
+      {tripCart.length > 0 && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: 30,
+            left: 30,
+            zIndex: 999,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start'
+          }}
+        >
+          {/* Collapsed Suitcase Badge Button */}
+          {!isCartOpen && (
+            <button
+              onClick={() => setIsCartOpen(true)}
+              style={{
+                width: 60,
+                height: 60,
+                borderRadius: '50%',
+                backgroundColor: 'var(--gold)',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+                border: '2px solid var(--sand)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                position: 'relative',
+                transition: 'all 0.3s ease',
+                animation: 'float 3s ease-in-out infinite'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+              aria-label="Open Custom Trip Planner"
+            >
+              <span style={{ fontSize: '1.5rem' }}>💼</span>
+              
+              {/* Counter Badge */}
+              <span
+                style={{
+                  position: 'absolute',
+                  top: -4,
+                  right: -4,
+                  background: 'var(--burgundy)',
+                  border: '1.5px solid var(--sand)',
+                  color: 'white',
+                  borderRadius: '50%',
+                  width: 22,
+                  height: 22,
+                  fontSize: '0.68rem',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                {tripCart.length}
+              </span>
+            </button>
+          )}
+
+          {/* Expanded Luxury Trip Planner Drawer */}
+          {isCartOpen && (
+            <div
+              className="anim-modal-pop"
+              style={{
+                width: 320,
+                background: 'linear-gradient(160deg, #222 0%, #161616 100%)',
+                border: '1.5px solid var(--gold)',
+                boxShadow: '0 12px 36px rgba(0,0,0,0.6)',
+                padding: '20px',
+                display: 'flex',
+                flexDirection: 'column',
+                borderRadius: 2
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(201,168,76,0.15)', paddingBottom: 10, marginBottom: 12 }}>
+                <span className="font-heading" style={{ fontSize: '1.05rem', color: '#fff', fontWeight: 600 }}>
+                  💼 Trip Package Builder
+                </span>
+                <button
+                  onClick={() => setIsCartOpen(false)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--sand-3)',
+                    cursor: 'pointer',
+                    fontSize: '1rem'
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Basket list */}
+              <div style={{ maxHeight: 180, overflowY: 'auto', marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {tripCart.map((item) => (
+                  <div
+                    key={item.id}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      background: 'rgba(255,255,255,0.02)',
+                      border: '1px solid rgba(201,168,76,0.08)',
+                      padding: '8px 10px',
+                    }}
+                  >
+                    <div style={{ display: 'flex', flexDirection: 'column', maxWidth: '82%' }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--gold)' }}>
+                        {item.name}
+                      </span>
+                      <span style={{ fontSize: '0.68rem', color: 'var(--sand-2)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                        {item.details}
+                      </span>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--sand-3)', marginTop: 1 }}>
+                        Rate: ${item.price}
+                      </span>
+                    </div>
+                    
+                    {/* Delete Item button */}
+                    <button
+                      onClick={() => handleRemoveTripItem(item.id)}
+                      title="Remove reservation item"
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--burgundy-hover)',
+                        fontSize: '0.85rem',
+                        cursor: 'pointer',
+                        padding: 4
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Cart Summary */}
+              <div style={{ borderTop: '1px solid rgba(201,168,76,0.15)', paddingTop: 12, marginBottom: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--sand-3)' }}>
+                    Est. Package Total
+                  </span>
+                  <span className="font-heading" style={{ fontSize: '1.2rem', color: 'var(--gold)', fontWeight: 600 }}>
+                    ${tripCart.reduce((sum, item) => sum + item.price, 0)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Action buttons inside drawer */}
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button
+                  onClick={() => setTripCart([])}
+                  style={{
+                    background: 'none',
+                    border: '1px solid var(--burgundy)',
+                    color: 'var(--sand)',
+                    padding: '8px 10px',
+                    fontSize: '0.65rem',
+                    fontFamily: 'var(--font-inter), sans-serif',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    cursor: 'pointer',
+                    flex: 1
+                  }}
+                >
+                  Clear All
+                </button>
+                <a
+                  href={getWhatsAppCartLink()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-burgundy"
+                  style={{
+                    textDecoration: 'none',
+                    padding: '8px 10px',
+                    fontSize: '0.65rem',
+                    textAlign: 'center',
+                    flex: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  Book Package
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Toast Notification pop-ups ── */}
+      {toastMessage && (
+        <div
+          className="anim-modal-pop"
+          style={{
+            position: 'fixed',
+            bottom: 30,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 10000,
+            background: 'var(--burgundy)',
+            border: '1.5px solid var(--gold)',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+            padding: '12px 24px',
+            color: 'var(--sand)',
+            fontFamily: 'var(--font-inter), Inter, sans-serif',
+            fontSize: '0.85rem',
+            fontWeight: 500,
+            textAlign: 'center',
+            minWidth: 280,
+            borderRadius: 2
+          }}
+        >
+          {toastMessage}
+        </div>
+      )}
+
     </div>
   );
 }
-
-function FeatureCard({ icon, title, desc }: { icon: string; title: string; desc: string }) {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        background: 'linear-gradient(160deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.015) 100%)',
-        border: hovered ? '1px solid rgba(201,168,76,0.5)' : '1px solid rgba(201,168,76,0.18)',
-        padding: '28px 24px',
-        textAlign: 'center',
-        transform: hovered ? 'translateY(-6px)' : 'translateY(0)',
-        boxShadow: hovered ? '0 20px 50px rgba(0,0,0,0.4)' : '0 4px 20px rgba(0,0,0,0.2)',
-        transition: 'all 0.35s ease',
-      }}
-    >
-      <div style={{ fontSize: '2.2rem', marginBottom: 14, display: 'inline-block', transform: hovered ? 'scale(1.15)' : 'scale(1)', transition: 'transform 0.3s' }}>{icon}</div>
-      <h3 className="font-heading" style={{ fontSize: '1.05rem', color: hovered ? 'var(--gold)' : 'var(--sand)', marginBottom: 10, transition: 'color 0.3s' }}>{title}</h3>
-      <p style={{ fontFamily: 'var(--font-inter), Inter, system-ui, sans-serif', fontSize: '0.9rem', color: 'var(--sand-3)', lineHeight: 1.75 }}>{desc}</p>
-    </div>
-  );
-}
-

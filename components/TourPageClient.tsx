@@ -201,7 +201,7 @@ export default function TourPageClient({ tour }: { tour: Tour }) {
   ) || egyptDestinationsBlogs.find(
     (b) => b.destination === tour.destination
   );
-  const waLink = `https://wa.me/201018157153?text=Hi%2C%20I%20would%20like%20to%20book%20the%20${encodeURIComponent(tour.title)}%20tour`;
+  const waLink = `https://wa.me/201211385550?text=Hi%2C%20I%20would%20like%20to%20book%20the%20${encodeURIComponent(tour.title)}%20tour`;
 
   return (
     <>

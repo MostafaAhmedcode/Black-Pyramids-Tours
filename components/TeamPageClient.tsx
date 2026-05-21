@@ -82,7 +82,7 @@ export default function TeamPageClient() {
           </p>
           <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link href="/tours" className="btn-primary" style={{ textDecoration: 'none' }}>Browse Tours</Link>
-            <a href="https://wa.me/201018157153" target="_blank" rel="noopener noreferrer" className="btn-secondary" style={{ textDecoration: 'none' }}>Contact on WhatsApp</a>
+            <a href="https://wa.me/201211385550" target="_blank" rel="noopener noreferrer" className="btn-secondary" style={{ textDecoration: 'none' }}>Contact on WhatsApp</a>
           </div>
         </div>
       </section>

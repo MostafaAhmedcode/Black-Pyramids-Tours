@@ -73,10 +73,10 @@ export default function HotelsPageClient() {
       <section style={{ maxWidth: 1280, margin: '0 auto', padding: '0 24px 64px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 48, marginBottom: 64 }}>
           <div>
-            <div style={{ fontFamily: F, fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 12 }}>About the Hotel</div>
-            <h2 className="font-heading" style={{ fontSize: '2rem', color: '#fff', marginBottom: 20, lineHeight: 1.2 }}>Your Home Near the Pyramids</h2>
+            <div style={{ fontFamily: F, fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 12 }}>About our accommodations</div>
+            <h2 className="font-heading" style={{ fontSize: '2rem', color: '#fff', marginBottom: 20, lineHeight: 1.2 }}>Handpicked Luxury Stays</h2>
             <p style={{ fontFamily: F, fontSize: '0.95rem', color: 'var(--sand-2)', lineHeight: 1.85, marginBottom: 16 }}>
-              Black Pyramids Tours hotel is one of the closest hotels to the Giza Pyramid Complex in Egypt. Our 16 beautifully designed rooms range from cozy economy singles to the Presidential Suite with a 360° panoramic view of all three pyramids.
+              Black Pyramids Tours travel agency coordinates luxury stays with the most prestigious handpicked partner hotels in Giza and across Egypt. From cozy boutique rooms to legendary 5★ presidential suites overlooking the ancient pyramids, we curate and book the perfect sanctuary for your bespoke itinerary.
             </p>
             <p style={{ fontFamily: F, fontSize: '0.95rem', color: 'var(--sand-2)', lineHeight: 1.85, marginBottom: 24 }}>
               Every room features air conditioning, LCD satellite TV, rainfall shower, designer toiletries, electric kettle, and free tea and coffee. Our complimentary continental breakfast is served daily from 7:00 AM to noon.
@@ -129,7 +129,7 @@ export default function HotelsPageClient() {
           <p style={{ fontFamily: F, fontSize: '1rem', color: 'var(--sand-2)', marginBottom: 28, maxWidth: 500, margin: '0 auto 28px' }}>
             Contact us on WhatsApp for instant booking confirmation. No advance payment required.
           </p>
-          <a href="https://wa.me/201018157153?text=Hi%2C%20I%20would%20like%20to%20book%20a%20room" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ textDecoration: 'none' }}>
+          <a href="https://wa.me/201211385550?text=Hi%2C%20I%20would%20like%20to%20book%20a%20room" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ textDecoration: 'none' }}>
             📱 Book via WhatsApp
           </a>
         </div>

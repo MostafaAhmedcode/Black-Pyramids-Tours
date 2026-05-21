@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Cinzel, Cormorant_Garamond, Inter } from "next/font/google";
+import { Playfair_Display, Cormorant_Garamond, Inter } from "next/font/google";
 import "./globals.css";
 import LiveChat from "@/components/LiveChat";
 
-const cinzel = Cinzel({
-  variable: "--font-cinzel",
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
@@ -13,7 +13,7 @@ const cinzel = Cinzel({
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
+  weight: ["300", "400", "500", "600", "700"],
   style: ["normal", "italic"],
   display: "swap",
 });
@@ -27,22 +27,22 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Black Pyramids Tours | Luxury Hotel & Private Egypt Tours from Giza",
+    default: "Black Pyramids Tours | Luxury Egypt Travel Agency & Planning",
     template: "%s | Black Pyramids Tours",
   },
   description:
-    "Luxury hotel steps from the Giza Pyramids. Private daily tours across Egypt — Cairo, Luxor, Aswan & more. English-speaking guides, private cars, from $35. Book on WhatsApp.",
+    "Luxury travel agency in Egypt · Est. 2005. Handpicked 5-star hotel reservations, private guided tours, and premium transportation across Cairo, Luxor, Aswan, and Hurghada. Fluent English-speaking team.",
   keywords:
-    "Egypt tours, Giza pyramids hotel, private Egypt tour, Cairo day trips, Luxor tour, English speaking guide Egypt, hotel near pyramids, Black Pyramids Tours",
+    "Egypt travel agency, luxury Egypt tours, hotel booking Egypt, private transportation Cairo, Nile cruise booking, luxury Egypt itinerary planner, Black Pyramids Tours",
   authors: [{ name: "Black Pyramids Tours" }],
   creator: "Black Pyramids Tours",
   openGraph: {
     type: "website",
     locale: "en_US",
     siteName: "Black Pyramids Tours",
-    title: "Black Pyramids Tours | Luxury Hotel & Private Egypt Tours from Giza",
+    title: "Black Pyramids Tours | Luxury Egypt Travel Agency & Planning",
     description:
-      "Luxury hotel steps from the Giza Pyramids. Private daily tours across Egypt. English-speaking guides, private cars, from $35.",
+      "Exclusive 5-star hotels, custom private tours, and luxury transportation across Giza, Cairo, Luxor, Aswan, and Alexandria. Est. 2005.",
     images: [
       {
         url: "https://images.unsplash.com/photo-1539768942893-daf53e448371?w=1200&h=630&fit=crop",
@@ -54,9 +54,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Black Pyramids Tours | Private Egypt Tours from Giza",
+    title: "Black Pyramids Tours | Luxury Egypt Travel Agency",
     description:
-      "Luxury hotel steps from the Giza Pyramids. Private tours, English guides, from $35.",
+      "Your trusted Egypt travel partner since 2005. Handpicked hotels, private daily tours, and luxury transport with a fluent English-speaking team.",
     images: [
       "https://images.unsplash.com/photo-1539768942893-daf53e448371?w=1200&h=630&fit=crop",
     ],
@@ -74,24 +74,24 @@ export const metadata: Metadata = {
 
 const jsonLd = {
   "@context": "https://schema.org",
-  "@type": "TouristInformationCenter",
+  "@type": "TravelAgency",
   name: "Black Pyramids Tours",
   description:
-    "Luxury hotel and private tour operator near the Giza Pyramids. English-speaking guides, private cars, tours across all of Egypt.",
-  telephone: "+201018157153",
-  email: "info@venuspyramids.com",
+    "Luxury Egypt travel agency since 2005. Custom private tours, 5-star hotel reservations, and professional transport with a fluent English team.",
+  telephone: "+201211385550",
+  email: "info@blackpyramidsgateway.com",
   address: {
     "@type": "PostalAddress",
-    streetAddress: "El Fokahaa Street, Nazlet El Batran",
+    streetAddress: "Nazlet El Batran, Pyramids Area",
     addressLocality: "Giza",
     addressCountry: "EG",
   },
   geo: { "@type": "GeoCoordinates", latitude: 29.9773, longitude: 31.1325 },
-  priceRange: "$",
+  priceRange: "$$$",
   aggregateRating: {
     "@type": "AggregateRating",
     ratingValue: "4.9",
-    reviewCount: "534",
+    reviewCount: "1534",
   },
   openingHours: "Mo-Su 00:00-24:00",
   image:
@@ -106,7 +106,8 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${cinzel.variable} ${cormorant.variable} ${inter.variable} h-full antialiased`}
+      data-scroll-behavior="smooth"
+      className={`${playfair.variable} ${cormorant.variable} ${inter.variable} h-full antialiased`}
     >
       <head>
         <script

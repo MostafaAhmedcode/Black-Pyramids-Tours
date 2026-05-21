@@ -193,7 +193,7 @@ export default function BookingWizard({ itemType, item, onCancel }: BookingWizar
       const res = await bookingResp.json();
       if (bookingResp.ok && res.success) {
         setBookingId(res.data.id);
-        const ref = `VPI-2026-${res.data.id.toString().padStart(4, '0')}X`;
+        const ref = `BPG-2026-${res.data.id.toString().padStart(4, '0')}X`;
         setBookingRef(ref);
         setLocalReceiptPath(`backend/uploads/emails/booking_${res.data.id}_paid.html`);
         setStep(3);
@@ -499,7 +499,7 @@ export default function BookingWizard({ itemType, item, onCancel }: BookingWizar
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontFamily: F, fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--gold)' }}>
-                VENUS PYRAMIDS INN
+                BLACK PYRAMIDS TOURS
               </span>
               <span style={{ fontSize: '1.5rem' }}>💳</span>
             </div>
@@ -667,7 +667,7 @@ export default function BookingWizard({ itemType, item, onCancel }: BookingWizar
           {/* Actions */}
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <a
-              href={`https://wa.me/201018157153?text=Hi%2C%20I%20have%20booking%20reference%20${bookingRef}`}
+              href={`https://wa.me/201211385550?text=Hi%2C%20I%20have%20booking%20reference%20${bookingRef}`}
               target="_blank"
               rel="noopener noreferrer"
               style={{
@@ -685,7 +685,7 @@ export default function BookingWizard({ itemType, item, onCancel }: BookingWizar
                 boxShadow: '0 4px 15px rgba(6, 214, 160, 0.3)'
               }}
             >
-              💬 Message Hotel on WhatsApp
+              💬 Message Agency on WhatsApp
             </a>
             <button
               onClick={onCancel}

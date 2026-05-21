@@ -69,7 +69,7 @@ export default function TransferPage() {
           <p style={{ fontFamily: F, fontSize: 'clamp(1rem, 2vw, 1.2rem)', color: 'var(--sand-2)', lineHeight: 1.8, maxWidth: 680, margin: '0 auto 32px' }}>
             Start your Egyptian adventure stress-free. We offer 24/7 comfortable, air-conditioned transfers with professional drivers and luxury vehicles to and from any location in Cairo and Giza.
           </p>
-          <a href="https://wa.me/201018157153?text=Hi%2C%20I%20would%20like%20to%20book%20a%20private%20transportation" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ textDecoration: 'none' }}>
+          <a href="https://wa.me/201211385550?text=Hi%2C%20I%20would%20like%20to%20book%20a%20private%20transportation" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ textDecoration: 'none' }}>
             Book a Ride Now
           </a>
         </div>
@@ -125,7 +125,7 @@ export default function TransferPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 20, marginTop: 'auto' }}>
                 <div style={{ fontFamily: F, fontSize: '1.25rem', fontWeight: 700, color: 'var(--gold)' }}>{t.price}</div>
                 <a 
-                  href={`https://wa.me/201018157153?text=${encodeURIComponent("Hi! I would like to book a private " + t.title + " ride for " + t.price + ".")}`} 
+                  href={`https://wa.me/201211385550?text=${encodeURIComponent("Hi! I would like to book a private " + t.title + " ride for " + t.price + ".")}`} 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="btn-primary" 
@@ -151,7 +151,7 @@ export default function TransferPage() {
             Traveling between cities? We offer customized long-distance luxury transportation between Cairo, Alexandria, Luxor, Aswan, Hurghada, Dahab, and Sharm El Sheikh.
           </p>
           <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a href="https://wa.me/201018157153?text=Hi%2C%20I%20would%20like%20to%20request%20a%20custom%20private%20transportation" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ textDecoration: 'none' }}>📱 Contact on WhatsApp</a>
+            <a href="https://wa.me/201211385550?text=Hi%2C%20I%20would%20like%20to%20request%20a%20custom%20private%20transportation" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ textDecoration: 'none' }}>📱 Contact on WhatsApp</a>
           </div>
         </div>
       </section>

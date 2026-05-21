@@ -1,39 +1,54 @@
 @import "tailwindcss";
 
 :root {
-  --gold: #c9a84c;
-  --gold-light: #e8c96a;
-  --gold-dark: #9a7228;
-  --navy: #070c1a;
-  --navy-2: #0c1225;
-  --navy-3: #111b35;
-  --sand: #f0ead8;
-  --sand-2: #c8bfa8;
-  --sand-3: #9a9080;
+  --gold: #C9A84C;
+  --gold-light: #DFCA7D;
+  --gold-dark: #9B7D2F;
+  --charcoal: #1a1a1a;
+  --charcoal-light: #262626;
+  --charcoal-dark: #121212;
+  --sand: #F5E6C8;
+  --sand-2: #E8D6B5;
+  --sand-3: #BBA786;
+  --burgundy: #5C1A1A;
+  --burgundy-hover: #7E2424;
+  --navy: var(--charcoal-dark);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 html { scroll-behavior: smooth; }
 
 body {
-  background-color: var(--navy);
+  background-color: var(--charcoal);
   color: var(--sand);
-  font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  font-family: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif;
   font-weight: 400;
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 18px;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+img {
+  max-width: 100%;
+  display: block;
 }
 
 /* ─── Scrollbar ─── */
-::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: var(--navy); }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--charcoal); }
 ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
 
 /* ─── Font helpers ─── */
-.font-heading { font-family: var(--font-cinzel), 'Cinzel', Georgia, serif; letter-spacing: 0.02em; }
+.font-heading { font-family: var(--font-playfair), 'Playfair Display', Georgia, serif; letter-spacing: 0.02em; }
 .font-sub     { font-family: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif; }
-.font-body    { font-family: var(--font-inter), Inter, system-ui, sans-serif; }
+.font-body    { font-family: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif; }
 
 /* ─── Gradient text ─── */
 .gradient-text {
@@ -45,8 +60,8 @@ body {
 
 /* ─── Section label ─── */
 .section-label {
-  font-family: var(--font-inter), Inter, sans-serif;
-  font-size: 0.7rem;
+  font-family: var(--font-cormorant), 'Cormorant Garamond', serif;
+  font-size: 0.85rem;
   font-weight: 600;
   letter-spacing: 0.3em;
   text-transform: uppercase;
@@ -81,9 +96,9 @@ body {
 .btn-primary {
   display: inline-block;
   background: linear-gradient(135deg, var(--gold-dark), var(--gold), var(--gold-light));
-  color: var(--navy);
-  font-family: var(--font-inter), Inter, sans-serif;
-  font-size: 0.75rem;
+  color: var(--charcoal-dark);
+  font-family: var(--font-playfair), 'Playfair Display', serif;
+  font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -114,8 +129,8 @@ body {
   display: inline-block;
   background: transparent;
   color: var(--gold);
-  font-family: var(--font-inter), Inter, sans-serif;
-  font-size: 0.75rem;
+  font-family: var(--font-playfair), 'Playfair Display', serif;
+  font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -128,6 +143,27 @@ body {
 .btn-secondary:hover {
   background: rgba(201,168,76,0.12);
   box-shadow: 0 0 24px rgba(201,168,76,0.2), inset 0 0 24px rgba(201,168,76,0.04);
+  transform: translateY(-2px);
+}
+
+.btn-burgundy {
+  display: inline-block;
+  background: var(--burgundy);
+  color: var(--sand);
+  font-family: var(--font-playfair), 'Playfair Display', serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 14px 32px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.35s ease;
+  white-space: nowrap;
+}
+.btn-burgundy:hover {
+  background: var(--burgundy-hover);
+  box-shadow: 0 6px 28px rgba(92,26,26,0.45);
   transform: translateY(-2px);
 }
 
@@ -146,14 +182,14 @@ body {
 /* ─── Image overlay ─── */
 .img-overlay {
   background: linear-gradient(to top,
-    rgba(7,12,26,0.95) 0%,
-    rgba(7,12,26,0.5) 45%,
-    rgba(7,12,26,0.1) 100%);
+    rgba(26,26,26,0.95) 0%,
+    rgba(26,26,26,0.5) 45%,
+    rgba(26,26,26,0.1) 100%);
 }
 
 /* ─── Modal ─── */
 .modal-bg {
-  background: rgba(4,7,18,0.94);
+  background: rgba(26,26,26,0.96);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
@@ -221,7 +257,7 @@ body {
 
 /* ─── Navbar ─── */
 .nav-scrolled {
-  background: rgba(7,12,26,0.97) !important;
+  background: rgba(26,26,26,0.98) !important;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(201,168,76,0.22) !important;
@@ -230,8 +266,8 @@ body {
 
 /* ─── Filter pill ─── */
 .filter-pill {
-  font-family: var(--font-inter), Inter, sans-serif;
-  font-size: 0.7rem;
+  font-family: var(--font-cormorant), 'Cormorant Garamond', serif;
+  font-size: 0.85rem;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -250,7 +286,7 @@ body {
 .filter-pill.active {
   background: var(--gold);
   border-color: var(--gold);
-  color: var(--navy);
+  color: var(--charcoal-dark);
 }
 
 /* ─── Stat bar ─── */

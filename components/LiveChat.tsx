@@ -11,19 +11,23 @@ interface ChatMessage {
 const FAQS = [
   {
     question: "🚗 Do you offer airport transfer?",
-    answer: "Yes, we offer premium private airport transfers! A professional English-speaking driver will meet you at Cairo International Airport in a modern air-conditioned vehicle for just $22 one way (available 24/7)."
+    answer:
+      "Yes, we offer premium private airport transfers across Egypt with professional drivers and luxury vehicles."
   },
   {
-    question: "🍳 Is breakfast included in room rates?",
-    answer: "Absolutely! A delicious and fresh continental breakfast is 100% complimentary for all our hotel guests. It is served daily from 7:00 AM until noon on our panoramic rooftop overlooking the Giza Pyramids."
+    question: "🏨 Can you arrange hotel bookings?",
+    answer:
+      "Absolutely! We arrange hotel bookings in all major destinations across Egypt based on your preferred hotel category and budget."
   },
   {
     question: "🏺 How can I book a private Egypt tour?",
-    answer: "You can book any tour directly through our website! Simply click on any excursion card, hit 'Book Tour Online', verify the date availability, and complete a simulated secure checkout in the Sandbox."
+    answer:
+      "You can directly book any Egypt tour from our website using the booking form available on every tour page."
   },
   {
     question: "🗺️ Can I customize my tour itinerary?",
-    answer: "Yes, absolutely! All our tours are private and can be fully customized. Our licensed Egyptologist guides and professional drivers will tailor the sights to your personal pace and preferences. Let us know!"
+    answer:
+      "Yes! All tours can be customized based on your interests, travel dates, and budget."
   }
 ];
 
@@ -31,392 +35,518 @@ const F = 'var(--font-inter), Inter, system-ui, sans-serif';
 
 export default function LiveChat() {
   const [isOpen, setIsOpen] = useState(false);
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       sender: 'agent',
-      text: "Salaam! Welcome to Venus Pyramids Inn. 🔺 I'm your virtual concierge. How can I help you discover Egypt today?",
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      text: "Welcome to Black Pyramids Tours 🔺 How can we help you today?",
+      time: new Date().toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+      })
     }
   ]);
+
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto scroll to bottom
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({
+      behavior: 'smooth'
+    });
   }, [messages, isTyping]);
 
-  const handleSendMessage = (text: string, isUserMessage = true) => {
+  const handleSendMessage = (text: string) => {
     if (!text.trim()) return;
 
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
-    if (isUserMessage) {
-      setMessages(prev => [...prev, { sender: 'user', text, time }]);
-      setInputText('');
-      
-      // Simulate agent typing
-      setIsTyping(true);
-      setTimeout(() => {
-        setIsTyping(false);
-        setMessages(prev => [...prev, {
+    const time = new Date().toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    setMessages(prev => [
+      ...prev,
+      {
+        sender: 'user',
+        text,
+        time
+      }
+    ]);
+
+    setInputText('');
+
+    setIsTyping(true);
+
+    setTimeout(() => {
+      setIsTyping(false);
+
+      setMessages(prev => [
+        ...prev,
+        {
           sender: 'agent',
-          text: "Thank you for reaching out! A member of our hotel team will respond shortly. You can also click the button below to instantly forward this query directly to our 24/7 hotel desk on WhatsApp!",
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }]);
-      }, 1500);
-    }
+          text:
+            "Thank you for contacting Black Pyramids Tours. One of our travel agents will reply shortly.",
+          time: new Date().toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+          })
+        }
+      ]);
+    }, 1500);
   };
 
   const handleFAQClick = (q: string, a: string) => {
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
-    // Add user question
-    setMessages(prev => [...prev, { sender: 'user', text: q, time }]);
-    
-    // Simulate typing
+    const time = new Date().toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    setMessages(prev => [
+      ...prev,
+      {
+        sender: 'user',
+        text: q,
+        time
+      }
+    ]);
+
     setIsTyping(true);
+
     setTimeout(() => {
       setIsTyping(false);
-      setMessages(prev => [...prev, { sender: 'agent', text: a, time }]);
-    }, 800);
-  };
 
-  const getWhatsAppLink = () => {
-    const lastUserMsg = [...messages].reverse().find(m => m.sender === 'user');
-    const textToForward = lastUserMsg 
-      ? `Hi Venus Pyramids Inn! I have a question: ${lastUserMsg.text}`
-      : "Hi Venus Pyramids Inn! I would like to make an inquiry.";
-    return `https://wa.me/201018157153?text=${encodeURIComponent(textToForward)}`;
+      setMessages(prev => [
+        ...prev,
+        {
+          sender: 'agent',
+          text: a,
+          time
+        }
+      ]);
+    }, 800);
   };
 
   return (
     <>
-      {/* 🟢 FLOATING WHATSAPP BUTTON (Always visible on all pages) */}
-      <a
-        href="https://wa.me/201018157153?text=Hi%20Venus%20Pyramids%20Inn!%20I%20would%20like%20to%20make%20an%20inquiry."
-        target="_blank"
-        rel="noopener noreferrer"
-        className="whatsapp-float-btn anim-float"
-        style={{
-          position: 'fixed',
-          bottom: isOpen ? 560 : 96,
-          right: 24,
-          zIndex: 150,
-          width: 60,
-          height: 60,
-          borderRadius: '50%',
-          background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)',
-          color: '#fff',
-          border: '2px solid rgba(255,255,255,0.2)',
-          cursor: 'pointer',
-          boxShadow: '0 8px 32px rgba(37, 211, 102, 0.4)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), bottom 0.4s ease',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'scale(1.1) translateY(-5px)';
-          e.currentTarget.style.boxShadow = '0 12px 40px rgba(37, 211, 102, 0.6)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'scale(1) translateY(0)';
-          e.currentTarget.style.boxShadow = '0 8px 32px rgba(37, 211, 102, 0.4)';
-        }}
-        title="Chat on WhatsApp"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" fill="currentColor" style={{ width: 28, height: 28 }}>
-          <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7 .9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-11.2-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/>
-        </svg>
-      </a>
-
-      {/* 🔴 CHAT AGENT CONTAINER */}
-      <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 150 }}>
-        {/* 🟡 CHAT BUBBLE TRIGGER */}
-        {!isOpen && (
-          <button
-            onClick={() => setIsOpen(true)}
-            className="anim-float"
-            style={{
-              width: 60,
-              height: 60,
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, var(--gold-dark), var(--gold), var(--gold-light))',
-              color: 'var(--navy)',
-              border: '2px solid rgba(255,255,255,0.2)',
-              cursor: 'pointer',
-              boxShadow: '0 8px 32px rgba(201, 168, 76, 0.4)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.1) translateY(-5px)';
-              e.currentTarget.style.boxShadow = '0 12px 40px rgba(201, 168, 76, 0.6)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1) translateY(0)';
-              e.currentTarget.style.boxShadow = '0 8px 32px rgba(201, 168, 76, 0.4)';
-            }}
-            title="Open Chat Concierge"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor" style={{ width: 26, height: 26 }}>
-              <path d="M256 32C114.6 32 0 125.1 0 240c0 49.6 21.4 95.3 57.6 130.7C51.1 398.9 31.8 425.6 31.5 426c-3.3 4.5-3.6 10.5-1 15.3s7.6 8 13 8c43.6 0 79.8-17.7 104.9-31.9 32.9 14.2 70.1 22.6 107.6 22.6 141.4 0 256-93.1 256-208S397.4 32 256 32zm0 368c-32.9 0-64.6-7.3-92.9-20.9-3.8-1.8-8.2-1.9-12.1 .2-27 14.5-60.6 29.8-97.1 33.6 15.6-22.3 30.5-47.5 39.8-71.1 1.7-4.4 .6-9.4-2.8-12.8C59.4 300.9 48 269.9 48 240c0-97 93.3-176 208-176s208 79 208 176-93.3 176-208 176z"/>
-            </svg>
-            <span style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: '50%', background: '#06d6a0', border: '2px solid var(--navy)', display: 'inline-block' }} />
-          </button>
-        )}
-
-      {/* 💬 CHATWINDOW PANEL */}
-      {isOpen && (
-        <div
-          className="anim-modal-pop"
-          style={{
-            width: '360px',
-            height: '520px',
-            background: 'linear-gradient(160deg, #0b1122 0%, #060a16 100%)',
-            border: '1px solid var(--gold)',
-            borderRadius: 8,
-            boxShadow: '0 20px 80px rgba(0,0,0,0.8)',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-          }}
-        >
-          {/* Header */}
-          <div
-            style={{
-              padding: '16px 20px',
-              background: 'linear-gradient(90deg, #0d162d, #080f21)',
-              borderBottom: '1px solid rgba(201, 168, 76, 0.25)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ position: 'relative', width: 36, height: 36, borderRadius: '50%', background: 'rgba(201,168,76,0.15)', border: '1px solid var(--gold)', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>
-                🔺
-                <span style={{ position: 'absolute', bottom: 0, right: 0, width: 9, height: 9, borderRadius: '50%', background: '#06d6a0', border: '1.5px solid var(--navy)' }} />
-              </div>
+      <div className="support-dock">
+        {isOpen && (
+          <div className="support-chat-window">
+            <div className="support-chat-header">
               <div>
-                <div style={{ fontFamily: F, fontSize: '0.85rem', fontWeight: 600, color: '#fff' }}>Venus Pyramids Concierge</div>
-                <div style={{ fontFamily: F, fontSize: '0.68rem', color: '#06d6a0', display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#06d6a0', display: 'inline-block' }} />
-                  Online · Ask about Egypt
+                <div className="support-chat-title">
+                  Black Pyramids Tours
+                </div>
+                <div className="support-chat-status">
+                  ● Luxury travel advisor online
                 </div>
               </div>
+
+              <button
+                onClick={() => setIsOpen(false)}
+                className="support-chat-close"
+                aria-label="Close live chat"
+              >
+                ×
+              </button>
             </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--sand-3)',
-                fontSize: '1.5rem',
-                cursor: 'pointer',
-                transition: 'color 0.2s',
-                padding: '0 4px',
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.color = '#fff'}
-              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--sand-3)'}
-            >
-              ×
-            </button>
-          </div>
 
-          {/* Messages area */}
-          <div
-            style={{
-              flex: 1,
-              padding: '16px 20px',
-              overflowY: 'auto',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 12,
-              background: 'radial-gradient(circle at bottom, rgba(201,168,76,0.03) 0%, transparent 80%)',
-            }}
-          >
-            {messages.map((m, idx) => {
-              const isAgent = m.sender === 'agent';
-              return (
-                <div
-                  key={idx}
-                  style={{
-                    alignSelf: isAgent ? 'flex-start' : 'flex-end',
-                    maxWidth: '85%',
-                  }}
-                >
+            <div className="support-chat-messages">
+              {messages.map((m, idx) => {
+                const isAgent = m.sender === 'agent';
+
+                return (
                   <div
-                    style={{
-                      background: isAgent ? 'rgba(255, 255, 255, 0.03)' : 'rgba(201, 168, 76, 0.12)',
-                      border: isAgent ? '1px solid rgba(255,255,255,0.06)' : '1px solid var(--gold)',
-                      borderRadius: isAgent ? '0px 12px 12px 12px' : '12px 0px 12px 12px',
-                      padding: '10px 14px',
-                      color: isAgent ? 'var(--sand)' : '#fff',
-                      fontFamily: F,
-                      fontSize: '0.85rem',
-                      lineHeight: 1.45,
-                    }}
+                    key={idx}
+                    className={`support-message${isAgent ? ' is-agent' : ' is-user'}`}
                   >
-                    {m.text}
+                    <div className="support-message-bubble">
+                      {m.text}
+                    </div>
+                    <div className="support-message-time">
+                      {m.time}
+                    </div>
                   </div>
-                  <div
-                    style={{
-                      fontFamily: F,
-                      fontSize: '0.62rem',
-                      color: 'var(--sand-3)',
-                      textAlign: isAgent ? 'left' : 'right',
-                      marginTop: 4,
-                      padding: '0 2px',
-                    }}
-                  >
-                    {m.time}
-                  </div>
+                );
+              })}
+
+              {isTyping && (
+                <div className="support-typing">
+                  Typing...
                 </div>
-              );
-            })}
+              )}
 
-            {/* Typing Indicator */}
-            {isTyping && (
-              <div style={{ alignSelf: 'flex-start', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '0px 12px 12px 12px', padding: '10px 14px', maxWidth: '85%', display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span className="dot" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--gold)', display: 'inline-block', animation: 'typing-dots 1.4s infinite' }} />
-                <span className="dot" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--gold)', display: 'inline-block', animation: 'typing-dots 1.4s infinite 0.2s' }} />
-                <span className="dot" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--gold)', display: 'inline-block', animation: 'typing-dots 1.4s infinite 0.4s' }} />
+              <div ref={messagesEndRef} />
+            </div>
+
+            {messages.length < 5 && (
+              <div className="support-chat-faq">
+                <div className="support-faq-title">
+                  Quick Questions
+                </div>
+
+                <div className="support-faq-list">
+                  {FAQS.map(faq => (
+                    <button
+                      key={faq.question}
+                      onClick={() =>
+                        handleFAQClick(
+                          faq.question,
+                          faq.answer
+                        )
+                      }
+                      className="support-faq-button"
+                    >
+                      {faq.question}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
-            {/* Empty space anchor */}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Quick FAQs list */}
-          {messages.length < 5 && (
-            <div style={{ padding: '8px 16px', background: 'rgba(0,0,0,0.2)', borderTop: '1px solid rgba(201,168,76,0.1)' }}>
-              <div style={{ fontFamily: F, fontSize: '0.62rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 8, paddingLeft: 4 }}>
-                💡 Quick FAQs
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {FAQS.map(faq => (
-                  <button
-                    key={faq.question}
-                    onClick={() => handleFAQClick(faq.question, faq.answer)}
-                    style={{
-                      textAlign: 'left',
-                      fontFamily: F,
-                      fontSize: '0.78rem',
-                      background: 'rgba(255,255,255,0.02)',
-                      border: '1px solid rgba(201,168,76,0.15)',
-                      color: 'var(--sand-2)',
-                      padding: '6px 10px',
-                      cursor: 'pointer',
-                      borderRadius: 2,
-                      transition: 'all 0.2s',
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.background = 'rgba(201,168,76,0.05)';
-                      e.currentTarget.style.color = '#fff';
-                      e.currentTarget.style.borderColor = 'var(--gold)';
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
-                      e.currentTarget.style.color = 'var(--sand-2)';
-                      e.currentTarget.style.borderColor = 'rgba(201,168,76,0.15)';
-                    }}
-                  >
-                    {faq.question}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Forward to WhatsApp prompt if user wrote something */}
-          {messages.length > 2 && (
-            <div style={{ padding: '8px 20px', background: 'rgba(6,214,160,0.05)', textAlign: 'center', borderTop: '1px dashed rgba(6,214,160,0.3)' }}>
-              <a
-                href={getWhatsAppLink()}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  fontFamily: F,
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  color: '#06d6a0',
-                  textDecoration: 'none',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6
-                }}
-              >
-                💬 Forward to Hotel Desk on WhatsApp
-              </a>
-            </div>
-          )}
-
-          {/* Form input */}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSendMessage(inputText);
-            }}
-            style={{
-              padding: '12px 20px',
-              background: '#040710',
-              borderTop: '1px solid rgba(201,168,76,0.25)',
-              display: 'flex',
-              gap: 8,
-            }}
-          >
-            <input
-              type="text"
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              placeholder="Ask anything..."
-              style={{
-                flex: 1,
-                padding: '8px 12px',
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(201,168,76,0.3)',
-                color: '#fff',
-                outline: 'none',
-                fontFamily: F,
-                fontSize: '0.85rem',
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSendMessage(inputText);
               }}
-            />
-            <button
-              type="submit"
-              style={{
-                background: 'var(--gold)',
-                color: 'var(--navy)',
-                border: 'none',
-                padding: '8px 14px',
-                fontWeight: 700,
-                fontFamily: F,
-                fontSize: '0.8rem',
-                cursor: 'pointer',
-                transition: 'background 0.2s',
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = 'var(--gold-light)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'var(--gold)'}
+              className="support-chat-form"
             >
-              Send
-            </button>
-          </form>
-        </div>
-      )}
+              <input
+                type="text"
+                value={inputText}
+                onChange={(e) =>
+                  setInputText(e.target.value)
+                }
+                placeholder="Type your message..."
+                className="support-chat-input"
+              />
 
-      {/* Global CSS for typing indicator dot jumping */}
-      <style jsx global>{`
-        @keyframes typing-dots {
-          0%, 100% { transform: translateY(0); opacity: 0.5; }
-          50% { transform: translateY(-4px); opacity: 1; }
+              <button
+                type="submit"
+                className="support-chat-send"
+              >
+                Send
+              </button>
+            </form>
+          </div>
+        )}
+
+        <div className="support-actions">
+          <a
+            href="https://wa.me/201211385550"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="support-action support-action--whatsapp"
+            aria-label="Contact us on WhatsApp"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 448 512"
+              fill="currentColor"
+              className="support-action-icon"
+            >
+              <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157z" />
+            </svg>
+            <span className="support-action-copy">
+              WhatsApp
+            </span>
+          </a>
+
+          <button
+            onClick={() => setIsOpen(prev => !prev)}
+            className="support-action support-action--chat"
+            aria-label={isOpen ? 'Hide live chat' : 'Open live chat'}
+          >
+            <span className="support-action-icon" aria-hidden="true">💬</span>
+            <span className="support-action-copy">
+              {isOpen ? 'Hide Chat' : 'Live Agent'}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <style>{`
+        .support-dock {
+          position: fixed;
+          right: 18px;
+          bottom: 18px;
+          z-index: 180;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 16px;
+        }
+        .support-actions {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          align-items: stretch;
+        }
+        .support-action {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          min-height: 58px;
+          padding: 0 18px;
+          border-radius: 999px;
+          border: 1px solid rgba(255, 255, 255, 0.14);
+          text-decoration: none;
+          cursor: pointer;
+          transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease, filter 0.28s ease;
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+          box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+        }
+        .support-action:hover {
+          transform: translateY(-4px) scale(1.02);
+          filter: saturate(1.05);
+        }
+        .support-action--whatsapp {
+          background: linear-gradient(135deg, rgba(33, 193, 96, 0.96), rgba(18, 140, 126, 0.92));
+          color: #fff;
+          box-shadow: 0 16px 34px rgba(18, 140, 126, 0.34), 0 0 24px rgba(33, 193, 96, 0.22);
+        }
+        .support-action--whatsapp:hover {
+          box-shadow: 0 18px 38px rgba(18, 140, 126, 0.4), 0 0 30px rgba(33, 193, 96, 0.3);
+        }
+        .support-action--chat {
+          background: linear-gradient(135deg, rgba(14, 12, 10, 0.96), rgba(43, 31, 14, 0.92));
+          color: var(--gold-light);
+          border-color: rgba(201, 168, 76, 0.3);
+          box-shadow: 0 16px 34px rgba(0, 0, 0, 0.36), 0 0 28px rgba(201, 168, 76, 0.18);
+        }
+        .support-action--chat:hover {
+          border-color: rgba(223, 202, 125, 0.5);
+          box-shadow: 0 18px 38px rgba(0, 0, 0, 0.42), 0 0 34px rgba(201, 168, 76, 0.24);
+        }
+        .support-action-icon {
+          width: 22px;
+          height: 22px;
+          flex-shrink: 0;
+          font-size: 1.2rem;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .support-action-copy {
+          font-family: ${F};
+          font-size: 0.76rem;
+          font-weight: 700;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          white-space: nowrap;
+        }
+        .support-chat-window {
+          width: min(380px, calc(100vw - 24px));
+          height: min(560px, calc(100vh - 144px));
+          background: linear-gradient(165deg, rgba(11, 10, 8, 0.97), rgba(19, 15, 10, 0.97));
+          border: 1px solid rgba(201, 168, 76, 0.3);
+          border-radius: 22px;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          box-shadow: 0 26px 70px rgba(0, 0, 0, 0.6), 0 0 36px rgba(201, 168, 76, 0.08);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+        }
+        .support-chat-header {
+          padding: 18px 20px;
+          background: linear-gradient(135deg, rgba(35, 27, 16, 0.96), rgba(10, 10, 10, 0.96));
+          border-bottom: 1px solid rgba(201, 168, 76, 0.18);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+        }
+        .support-chat-title {
+          color: #fff;
+          font-weight: 700;
+          font-family: ${F};
+        }
+        .support-chat-status {
+          color: #7ae8bd;
+          font-size: 0.72rem;
+          margin-top: 4px;
+          font-family: ${F};
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+        }
+        .support-chat-close {
+          width: 40px;
+          height: 40px;
+          border-radius: 999px;
+          border: 1px solid rgba(201, 168, 76, 0.18);
+          background: rgba(255, 255, 255, 0.04);
+          color: #fff;
+          font-size: 1.4rem;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .support-chat-close:hover {
+          color: var(--gold);
+          border-color: rgba(201, 168, 76, 0.38);
+          background: rgba(201, 168, 76, 0.08);
+        }
+        .support-chat-messages {
+          flex: 1;
+          overflow-y: auto;
+          padding: 18px;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .support-message {
+          max-width: 86%;
+          display: flex;
+          flex-direction: column;
+        }
+        .support-message.is-agent {
+          align-self: flex-start;
+        }
+        .support-message.is-user {
+          align-self: flex-end;
+        }
+        .support-message-bubble {
+          padding: 12px 14px;
+          border-radius: 16px;
+          color: #fff;
+          font-family: ${F};
+          font-size: 0.86rem;
+          line-height: 1.55;
+        }
+        .support-message.is-agent .support-message-bubble {
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .support-message.is-user .support-message-bubble {
+          background: linear-gradient(135deg, rgba(201, 168, 76, 0.24), rgba(155, 125, 47, 0.22));
+          border: 1px solid rgba(201, 168, 76, 0.18);
+        }
+        .support-message-time {
+          color: rgba(255, 255, 255, 0.45);
+          font-size: 0.65rem;
+          margin-top: 5px;
+          font-family: ${F};
+        }
+        .support-typing {
+          color: rgba(255, 255, 255, 0.7);
+          font-size: 0.8rem;
+          font-family: ${F};
+        }
+        .support-chat-faq {
+          padding: 14px 16px;
+          border-top: 1px solid rgba(255, 255, 255, 0.05);
+          background: rgba(255, 255, 255, 0.015);
+        }
+        .support-faq-title {
+          color: var(--gold);
+          margin-bottom: 10px;
+          font-size: 0.72rem;
+          font-family: ${F};
+          font-weight: 700;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+        }
+        .support-faq-list {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .support-faq-button {
+          text-align: left;
+          padding: 9px 11px;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          color: #fff;
+          border-radius: 10px;
+          cursor: pointer;
+          font-size: 0.75rem;
+          font-family: ${F};
+          transition: all 0.2s ease;
+        }
+        .support-faq-button:hover {
+          border-color: rgba(201, 168, 76, 0.24);
+          background: rgba(201, 168, 76, 0.08);
+          color: var(--gold-light);
+        }
+        .support-chat-form {
+          padding: 14px;
+          display: flex;
+          gap: 8px;
+          border-top: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(0, 0, 0, 0.18);
+        }
+        .support-chat-input {
+          flex: 1;
+          padding: 11px 13px;
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: #fff;
+          border-radius: 12px;
+          outline: none;
+          font-family: ${F};
+          font-size: 0.86rem;
+        }
+        .support-chat-input:focus {
+          border-color: rgba(201, 168, 76, 0.4);
+          box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.08);
+        }
+        .support-chat-send {
+          background: linear-gradient(135deg, var(--gold-dark), var(--gold), var(--gold-light));
+          color: #111;
+          border: none;
+          padding: 0 16px;
+          border-radius: 12px;
+          cursor: pointer;
+          font-weight: 700;
+          font-family: ${F};
+          letter-spacing: 0.06em;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .support-chat-send:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 12px 24px rgba(201, 168, 76, 0.25);
+        }
+        @media (max-width: 768px) {
+          .support-dock {
+            right: 12px;
+            bottom: 12px;
+            gap: 12px;
+          }
+          .support-actions {
+            gap: 10px;
+          }
+          .support-action {
+            min-height: 54px;
+            padding: 0 14px;
+          }
+          .support-action-copy {
+            font-size: 0.68rem;
+            letter-spacing: 0.12em;
+          }
+          .support-chat-window {
+            width: min(360px, calc(100vw - 8px));
+            height: min(70vh, 520px);
+          }
+        }
+        @media (max-width: 520px) {
+          .support-action-copy {
+            display: none;
+          }
+          .support-action {
+            width: 54px;
+            height: 54px;
+            padding: 0;
+            border-radius: 999px;
+          }
+          .support-chat-window {
+            width: calc(100vw - 12px);
+            height: min(68vh, 500px);
+          }
         }
       `}</style>
-    </div>
     </>
   );
 }

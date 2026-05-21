@@ -43,20 +43,20 @@ export default function BlogTemplate({ blog }: BlogTemplateProps) {
     'dateModified': '2026-05-20T16:00:00+03:00',
     'author': {
       '@type': 'Organization',
-      'name': 'Venus Pyramids Inn',
-      'url': 'https://venuspyramidsinn.com',
+      'name': 'Black Pyramids Tours',
+      'url': 'https://blackpyramidsgateway.com',
     },
     'publisher': {
       '@type': 'Organization',
-      'name': 'Venus Pyramids Inn',
+      'name': 'Black Pyramids Tours',
       'logo': {
         '@type': 'ImageObject',
-        'url': 'https://venuspyramidsinn.com/favicon.jfif',
+        'url': 'https://blackpyramidsgateway.com/favicon.jfif',
       },
     },
     'mainEntityOfPage': {
       '@type': 'WebPage',
-      '@id': `https://venuspyramidsinn.com/blog/${blog.slug}`,
+      '@id': `https://blackpyramidsgateway.com/blog/${blog.slug}`,
     },
   };
 
@@ -81,19 +81,19 @@ export default function BlogTemplate({ blog }: BlogTemplateProps) {
         '@type': 'ListItem',
         'position': 1,
         'name': isRtl ? 'الرئيسية' : 'Home',
-        'item': 'https://venuspyramidsinn.com/',
+        'item': 'https://blackpyramidsgateway.com/',
       },
       {
         '@type': 'ListItem',
         'position': 2,
         'name': isRtl ? 'المدونة' : 'Blog',
-        'item': 'https://venuspyramidsinn.com/blog',
+        'item': 'https://blackpyramidsgateway.com/blog',
       },
       {
         '@type': 'ListItem',
         'position': 3,
         'name': isRtl ? blog.nameAr : blog.nameEn,
-        'item': `https://venuspyramidsinn.com/blog/${blog.slug}`,
+        'item': `https://blackpyramidsgateway.com/blog/${blog.slug}`,
       },
     ],
   };
@@ -703,7 +703,7 @@ export default function BlogTemplate({ blog }: BlogTemplateProps) {
               ✨ {isRtl ? `رحلات مقترحة إلى ${blog.nameAr}` : `Featured ${blog.nameEn} Trips & Packages`}
             </h2>
             <p style={{ fontSize: '1rem', color: 'var(--sand-2)', maxWidth: 600, margin: '0 auto' }}>
-              {isRtl ? 'احجز رحلة خاصة مع مرشدين وخدمات شاملة واستمتع بعطلة لا تُنسى في مصر.' : 'Book dynamic local tours led by our hotel guides with premium transport and full service.'}
+              {isRtl ? 'احجز رحلة خاصة مع مرشدين وخدمات شاملة واستمتع بعطلة لا تُنسى في مصر.' : 'Book dynamic private tours led by our expert agency guides with premium transport and full service.'}
             </p>
           </div>
 
@@ -747,7 +747,7 @@ export default function BlogTemplate({ blog }: BlogTemplateProps) {
                       {tour.description}
                     </p>
                     <a
-                      href={`https://wa.me/201018157153?text=Hi%2C%20I%20would%20like%20to%20book%20the%20${encodeURIComponent(tour.title)}%20tour`}
+                      href={`https://wa.me/201211385550?text=Hi%2C%20I%20would%20like%20to%20book%20the%20${encodeURIComponent(tour.title)}%20tour`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="btn-secondary"

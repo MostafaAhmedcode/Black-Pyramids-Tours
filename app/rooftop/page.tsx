@@ -44,7 +44,7 @@ export default function RooftopPage() {
           <p style={{ fontFamily: F, fontSize: 'clamp(1rem, 2vw, 1.2rem)', color: 'var(--sand-2)', lineHeight: 1.8, maxWidth: 680, margin: '0 auto 32px' }}>
             Perched on the top floor of our hotel, our rooftop restaurant offers one of the most extraordinary dining experiences in Egypt — panoramic views of all three Giza Pyramids and the ancient skyline of Old Cairo.
           </p>
-          <a href="https://wa.me/201018157153?text=Hi%2C%20I%20would%20like%20to%20reserve%20a%20rooftop%20table" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ textDecoration: 'none' }}>
+          <a href="https://wa.me/201211385550?text=Hi%2C%20I%20would%20like%20to%20reserve%20a%20rooftop%20table" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ textDecoration: 'none' }}>
             Reserve a Table
           </a>
         </div>
@@ -105,7 +105,7 @@ export default function RooftopPage() {
             Tables fill up fast at sunset. Message us on WhatsApp to reserve your spot with the best pyramid view.
           </p>
           <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a href="https://wa.me/201018157153?text=Hi%2C%20I%20would%20like%20to%20reserve%20a%20rooftop%20table" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ textDecoration: 'none' }}>📱 Reserve via WhatsApp</a>
+            <a href="https://wa.me/201211385550?text=Hi%2C%20I%20would%20like%20to%20reserve%20a%20rooftop%20table" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ textDecoration: 'none' }}>📱 Reserve via WhatsApp</a>
             <Link href="/hotels" className="btn-secondary" style={{ textDecoration: 'none' }}>View Hotel Rooms</Link>
           </div>
         </div>
