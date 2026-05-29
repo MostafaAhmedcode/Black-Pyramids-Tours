@@ -86,7 +86,12 @@ export default function BookingWizard({ itemType, item, onCancel }: BookingWizar
       const tour = item as TourItem;
       if (tour.priceTiers && tour.priceTiers.length > 0) {
         const tier = tour.priceTiers[selectedTierIdx];
-        const price = tourPeople === 1 ? tier.price1 : tier.price2 * 2;
+        let price = tier.price1;
+        if (tourPeople === 2) {
+          price = tier.price2;
+        } else if (tourPeople > 2) {
+          price = tier.price2 + (tourPeople - 2) * 10;
+        }
         setCalculatedPrice(price);
       } else {
         setCalculatedPrice(tour.basePrice * tourPeople);
@@ -288,30 +293,38 @@ export default function BookingWizard({ itemType, item, onCancel }: BookingWizar
             {itemType === 'room' ? (
               <>
                 <div>
-                  <label style={{ display: 'block', fontFamily: F, fontSize: '0.75rem', color: 'var(--sand-2)', marginBottom: 6 }}>Check-In Date</label>
-                  <input
-                    type="date"
-                    required
-                    value={checkInDate}
-                    onChange={(e) => setCheckInDate(e.target.value)}
-                    style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(201,168,76,0.3)', color: '#fff', outline: 'none', fontFamily: F, fontSize: '0.88rem' }}
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <label style={{ display: 'block', fontFamily: F, fontSize: '0.75rem', color: 'var(--sand-2)', marginBottom: 6 }}>
+                      <span style={{ color: 'var(--gold)', marginRight: 4, fontSize: '1.2rem' }}>📅</span>Check-In Date
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      value={checkInDate}
+                      onChange={(e) => setCheckInDate(e.target.value)}
+                      style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(201,168,76,0.3)', color: '#fff', outline: 'none', fontFamily: F, fontSize: '0.88rem' }}
+                    />
+                  </div>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontFamily: F, fontSize: '0.75rem', color: 'var(--sand-2)', marginBottom: 6 }}>Check-Out Date</label>
-                  <input
-                    type="date"
-                    required
-                    value={checkOutDate}
-                    onChange={(e) => setCheckOutDate(e.target.value)}
-                    style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(201,168,76,0.3)', color: '#fff', outline: 'none', fontFamily: F, fontSize: '0.88rem' }}
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <label style={{ display: 'block', fontFamily: F, fontSize: '0.75rem', color: 'var(--sand-2)', marginBottom: 6 }}>
+                      <span style={{ color: 'var(--gold)', marginRight: 4 }}>📅</span>Check-Out Date
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      value={checkOutDate}
+                      onChange={(e) => setCheckOutDate(e.target.value)}
+                      style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(201,168,76,0.3)', color: '#fff', outline: 'none', fontFamily: F, fontSize: '0.88rem' }}
+                    />
+                  </div>
                 </div>
               </>
             ) : (
               <>
                 <div>
-                  <label style={{ display: 'block', fontFamily: F, fontSize: '0.75rem', color: 'var(--sand-2)', marginBottom: 6 }}>Excursion Date</label>
+                    <label style={{ display: 'block', fontFamily: F, fontSize: '0.75rem', color: 'var(--sand-2)', marginBottom: 6 }}><span style={{ color: 'var(--gold)', marginRight: 4, fontSize: '1.2rem' }}>📅</span>Excursion Date</label>
                   <input
                     type="date"
                     required
@@ -321,15 +334,18 @@ export default function BookingWizard({ itemType, item, onCancel }: BookingWizar
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontFamily: F, fontSize: '0.75rem', color: 'var(--sand-2)', marginBottom: 6 }}>Number of People</label>
-                  <select
-                    value={tourPeople}
-                    onChange={(e) => setTourPeople(Number(e.target.value))}
-                    style={{ width: '100%', padding: '10px 12px', background: '#0a0f1e', border: '1px solid rgba(201,168,76,0.3)', color: '#fff', outline: 'none', fontFamily: F, fontSize: '0.88rem' }}
-                  >
-                    <option value={1}>1 person</option>
-                    <option value={2}>2 persons</option>
-                  </select>
+                  <div>
+                    <label style={{ display: 'block', fontFamily: F, fontSize: '0.75rem', color: 'var(--sand-2)', marginBottom: 6 }}>Number of People</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <button type="button" onClick={() => setTourPeople(prev => Math.max(1, prev - 1))}
+                        style={{ padding: '4px 8px', background: 'var(--gold)', border: '1px solid rgba(201,168,76,0.5)', color: 'var(--navy)', cursor: 'pointer' }}>－</button>
+                      <input type="number" min={1} value={tourPeople}
+                        onChange={(e) => setTourPeople(Math.max(1, Number(e.target.value) || 1))}
+                        style={{ width: '60px', textAlign: 'center', padding: '6px', background: '#0a0f1e', border: '1px solid rgba(201,168,76,0.3)', color: '#fff', fontFamily: F, fontSize: '0.88rem' }}/>
+                      <button type="button" onClick={() => setTourPeople(prev => prev + 1)}
+                        style={{ padding: '4px 8px', background: 'var(--gold)', border: '1px solid rgba(201,168,76,0.5)', color: 'var(--navy)', cursor: 'pointer' }}>＋</button>
+                    </div>
+                  </div>
                 </div>
               </>
             )}
@@ -346,7 +362,7 @@ export default function BookingWizard({ itemType, item, onCancel }: BookingWizar
               >
                 {(item as TourItem).priceTiers!.map((t, idx) => (
                   <option key={idx} value={idx}>
-                    {t.label} (1p: ${t.price1} | 2p: ${t.price2 * 2})
+                    {t.label} (1p: ${t.price1} | 2p: ${t.price2})
                   </option>
                 ))}
               </select>
@@ -364,7 +380,7 @@ export default function BookingWizard({ itemType, item, onCancel }: BookingWizar
             <div style={{ fontFamily: F, fontSize: '0.75rem', color: 'var(--sand-2)', fontStyle: 'italic' }}>
               {itemType === 'room'
                 ? `Calculated for ${nightsCount} night${nightsCount > 1 ? 's' : ''} ($${(item as RoomItem).price}/night)`
-                : `Guided day excursion for ${tourPeople} guest${tourPeople > 1 ? 's' : ''}`
+                : `Guided day excursion for ${tourPeople} guest${tourPeople > 1 ? 's' : ''} — Total $${calculatedPrice}`
               }
             </div>
           </div>

@@ -180,14 +180,14 @@ function PricingTable({ priceTiers }: { priceTiers: Tour['priceTiers'] }) {
     <div style={{ border: '1px solid rgba(201,168,76,0.2)', borderRadius: 4, overflow: 'hidden', marginBottom: 24 }}>
       <div style={{ background: 'rgba(201,168,76,0.08)', padding: '12px 20px', borderBottom: '1px solid rgba(201,168,76,0.15)' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, fontFamily: F, fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--sand-3)' }}>
-          <span>Package</span><span style={{ textAlign: 'center' }}>1 Person</span><span style={{ textAlign: 'center' }}>2 Persons</span>
+          <span>Package</span><span style={{ textAlign: 'center' }}>1 Person</span><span style={{ textAlign: 'center' }}>2+ Persons</span>
         </div>
       </div>
       {priceTiers.map((tier, i) => (
         <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, padding: '14px 20px', borderBottom: i < priceTiers.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}>
           <span style={{ fontFamily: F, fontSize: '0.9rem', color: 'var(--sand)' }}>{tier.label}</span>
           <span style={{ fontFamily: F, fontSize: '1rem', fontWeight: 700, color: 'var(--gold)', textAlign: 'center' }}>${tier.price1}</span>
-          <span style={{ fontFamily: F, fontSize: '1rem', fontWeight: 700, color: 'var(--gold)', textAlign: 'center' }}>${tier.price2}</span>
+          <span style={{ fontFamily: F, fontSize: '1rem', fontWeight: 700, color: 'var(--gold)', textAlign: 'center' }}>${Number.isInteger(tier.price2 / 2) ? tier.price2 / 2 : (tier.price2 / 2).toFixed(2)}/person</span>
         </div>
       ))}
     </div>
@@ -201,7 +201,33 @@ export default function TourPageClient({ tour }: { tour: Tour }) {
   ) || egyptDestinationsBlogs.find(
     (b) => b.destination === tour.destination
   );
-  const waLink = `https://wa.me/201211385550?text=Hi%2C%20I%20would%20like%20to%20book%20the%20${encodeURIComponent(tour.title)}%20tour`;
+  const [guestCount, setGuestCount] = useState(1);
+  const [preferredDate, setPreferredDate] = useState('');
+  const [selectedPackageIdx, setSelectedPackageIdx] = useState(0);
+
+  const selectedPackage = tour.priceTiers && tour.priceTiers.length > 0 ? tour.priceTiers[selectedPackageIdx] : { label: 'Standard', price1: tour.basePrice, price2: tour.basePrice };
+  const getPerPersonPrice = (price1: number, price2: number, guests: number) => {
+    if (guests <= 1) return price1;
+    return price2 / 2;
+  };
+
+  const formatPrice = (price: number) => {
+    return Number.isInteger(price) ? price.toString() : price.toFixed(2);
+  };
+
+  const perPersonPrice = getPerPersonPrice(selectedPackage.price1, selectedPackage.price2, guestCount);
+  const totalTourPrice = perPersonPrice * guestCount;
+
+  const handleGuestInputChange = (value: string) => {
+    const parsed = Number.parseInt(value, 10);
+    if (Number.isNaN(parsed)) {
+      setGuestCount(1);
+      return;
+    }
+    setGuestCount(Math.max(1, parsed));
+  };
+
+  const waLink = `https://wa.me/201211385550?text=${encodeURIComponent(`Hi, I would like to book the ${tour.title} tour (${selectedPackage.label}) for ${guestCount} guest${guestCount > 1 ? 's' : ''}${preferredDate ? ` on ${preferredDate}` : ''}. Estimated total: $${formatPrice(totalTourPrice)}. Please share availability and final confirmation.`)}`;
 
   return (
     <>
@@ -373,6 +399,74 @@ export default function TourPageClient({ tour }: { tour: Tour }) {
               <div className="font-heading" style={{ fontSize: '3.5rem', color: 'var(--gold)', lineHeight: 1 }}>${tour.basePrice}</div>
               <div style={{ fontFamily: F, fontSize: '0.85rem', color: 'var(--sand-2)', marginTop: 6 }}>per person</div>
             </div>
+            <div style={{ display: 'grid', gap: 14, marginBottom: 18 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: 8, fontFamily: F, fontSize: '0.8rem', color: 'var(--sand-2)' }}>
+                  Number of Guests
+                  <div className="guest-stepper">
+                    <button
+                      type="button"
+                      onClick={() => setGuestCount((prev) => Math.max(1, prev - 1))}
+                      className="guest-stepper-btn"
+                      aria-label="Decrease guests"
+                    >
+                      -
+                    </button>
+                    <input
+                      type="number"
+                      min="1"
+                      step="1"
+                      inputMode="numeric"
+                      value={guestCount}
+                      onChange={(e) => handleGuestInputChange(e.target.value)}
+                      className="booking-input booking-input--number"
+                      aria-label="Number of guests"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setGuestCount((prev) => prev + 1)}
+                      className="guest-stepper-btn"
+                      aria-label="Increase guests"
+                    >
+                      +
+                    </button>
+                  </div>
+                </label>
+
+                <label style={{ display: 'flex', flexDirection: 'column', gap: 8, fontFamily: F, fontSize: '0.8rem', color: 'var(--sand-2)' }}>
+                  Preferred Date
+                  <input
+                    type="date"
+                    value={preferredDate}
+                    onChange={(e) => setPreferredDate(e.target.value)}
+                    className="booking-input booking-input--date"
+                  />
+                </label>
+              </div>
+
+              <label style={{ display: 'flex', flexDirection: 'column', gap: 8, fontFamily: F, fontSize: '0.8rem', color: 'var(--sand-2)' }}>
+                Tour Package
+                <select
+                  value={selectedPackageIdx}
+                  onChange={(e) => setSelectedPackageIdx(Number(e.target.value))}
+                  className="booking-select"
+                >
+                  {tour.priceTiers.map((tier, idx) => (
+                    <option key={idx} value={idx}>
+                      {tier.label} — 1p: ${tier.price1}, 2+: ${Number.isInteger(tier.price2 / 2) ? tier.price2 / 2 : (tier.price2 / 2).toFixed(2)}/person
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <div style={{ padding: '16px 18px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(201,168,76,0.15)', borderRadius: 2 }}>
+                <div style={{ fontFamily: F, fontSize: '0.75rem', color: 'var(--sand-3)', marginBottom: 6 }}>Estimated Group Total</div>
+                <div style={{ fontFamily: F, fontSize: '2rem', color: 'var(--gold)', fontWeight: 700 }}>${formatPrice(totalTourPrice)}</div>
+                <div style={{ fontFamily: F, fontSize: '0.82rem', color: 'var(--sand-2)' }}>
+                  ${formatPrice(perPersonPrice)} per person · {guestCount} guest{guestCount > 1 ? 's' : ''}{preferredDate ? ` · ${preferredDate}` : ''}
+                </div>
+              </div>
+            </div>
 
             <a
               href={waLink}
@@ -406,6 +500,82 @@ export default function TourPageClient({ tour }: { tour: Tour }) {
         @keyframes zoomIn {
           from { transform: scale(1); }
           to { transform: scale(1.08); }
+        }
+        .booking-input,
+        .booking-select {
+          width: 100%;
+          padding: 12px 14px;
+          border-radius: 2px;
+          border: 1px solid rgba(201,168,76,0.4);
+          background: #07101f;
+          color: #fff;
+          font-family: ${F};
+          min-height: 48px;
+        }
+        .booking-input:focus,
+        .booking-select:focus {
+          outline: none;
+          border-color: var(--gold-light);
+          box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+        }
+        .booking-input--date {
+          color-scheme: dark;
+        }
+        .booking-input--date::-webkit-calendar-picker-indicator {
+          filter: invert(88%) sepia(19%) saturate(556%) hue-rotate(356deg) brightness(97%) contrast(92%);
+          cursor: pointer;
+          opacity: 1;
+        }
+        .booking-input--date::-webkit-datetime-edit,
+        .booking-input--date::-webkit-datetime-edit-text,
+        .booking-input--date::-webkit-datetime-edit-month-field,
+        .booking-input--date::-webkit-datetime-edit-day-field,
+        .booking-input--date::-webkit-datetime-edit-year-field {
+          color: #fff;
+        }
+        .guest-stepper {
+          display: grid;
+          grid-template-columns: 48px 1fr 48px;
+          align-items: stretch;
+          border: 1px solid rgba(201,168,76,0.4);
+          background: #07101f;
+          border-radius: 2px;
+          overflow: hidden;
+        }
+        .guest-stepper:focus-within {
+          border-color: var(--gold-light);
+          box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+        }
+        .guest-stepper-btn {
+          border: none;
+          background: rgba(201,168,76,0.08);
+          color: var(--gold);
+          font-size: 1.3rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: background 0.25s ease, color 0.25s ease;
+        }
+        .guest-stepper-btn:hover {
+          background: rgba(201,168,76,0.16);
+          color: var(--gold-light);
+        }
+        .booking-input--number {
+          border: none;
+          border-left: 1px solid rgba(201,168,76,0.18);
+          border-right: 1px solid rgba(201,168,76,0.18);
+          border-radius: 0;
+          text-align: center;
+          padding: 12px 8px;
+          box-shadow: none;
+          -moz-appearance: textfield;
+        }
+        .booking-input--number:focus {
+          box-shadow: none;
+        }
+        .booking-input--number::-webkit-outer-spin-button,
+        .booking-input--number::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
         }
       `}</style>
     </>

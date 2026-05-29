@@ -1,0 +1,84 @@
+[
+  {
+    "id": 1,
+    "title": "Giza Pyramids, Saqqara & Memphis",
+    "description": "Visit one of the Seven Wonders of the World! Your guide takes you to the 5,000-year-old Necropolis in Giza — the Great Pyramids of Cheops, Chephren, and Mykerinus, guarded by the Great Sphinx. Then discover the Step Pyramid at Saqqara and Memphis, the first ancient capital of Egypt.",
+    "location": "Giza, Cairo",
+    "destination": "Cairo & Giza",
+    "basePrice": 35,
+    "priceTiers": [
+      {
+        "label": "Car only",
+        "price1": 35,
+        "price2": 45
+      },
+      {
+        "label": "Car + Lunch",
+        "price1": 45,
+        "price2": 60
+      },
+      {
+        "label": "Car + Lunch + Guide",
+        "price1": 95,
+        "price2": 140
+      }
+    ],
+    "duration": "Approx. 8 Hours",
+    "tourType": "Full Day",
+    "pickupTime": "08:00 AM",
+    "rating": 4.9,
+    "reviews": 534,
+    "image": "https://images.unsplash.com/photo-1539768942893-daf53e448371?w=800&h=500&fit=crop&q=85",
+    "highlights": [
+      "Great Pyramids of Cheops, Chephren & Mykerinus",
+      "The Great Sphinx",
+      "Valley Temple of Chephren",
+      "Step Pyramid of Saqqara (King Djoser)",
+      "Memphis — Statue of Ramses II & Alabaster Sphinx"
+    ],
+    "includes": [
+      "Hotel pickup & return",
+      "Private air-conditioned vehicle",
+      "All taxes & service charges",
+      "Bottled water during trip"
+    ],
+    "excludes": [
+      "Any extras not mentioned in the itinerary"
+    ],
+    "itinerary": [
+      {
+        "time": "08:00",
+        "activity": "Hotel pickup in private A/C vehicle"
+      },
+      {
+        "time": "08:45",
+        "activity": "Giza Plateau — Pyramids of Cheops, Chephren & Mykerinus"
+      },
+      {
+        "time": "10:30",
+        "activity": "The Great Sphinx & Valley Temple of Chephren"
+      },
+      {
+        "time": "12:00",
+        "activity": "Lunch at a local restaurant (if included)"
+      },
+      {
+        "time": "13:30",
+        "activity": "Step Pyramid of Saqqara — world's oldest stone structure"
+      },
+      {
+        "time": "15:30",
+        "activity": "Memphis — Statue of Ramses II & Alabaster Sphinx"
+      },
+      {
+        "time": "17:00",
+        "activity": "Return transfer to hotel"
+      }
+    ],
+    "meetingPoint": "Hotel lobby — driver waiting with name sign",
+    "images": [
+      "https://images.unsplash.com/photo-1539768942893-daf53e448371?w=800&h=500&fit=crop&q=85"
+    ],
+    "note": ""
+  }
+]

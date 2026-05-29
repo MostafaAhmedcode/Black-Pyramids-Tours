@@ -20,6 +20,10 @@ import AdminRoomsTab from '../../../components/AdminRoomsTab';
 import AdminToursTab from '../../../components/AdminToursTab';
 import AdminBookingsTab from '../../../components/AdminBookingsTab';
 import AdminStaffTab from '../../../components/AdminStaffTab';
+import AdminHotelsTab from '../../../components/AdminHotelsTab';
+import AdminTransfersTab from '../../../components/AdminTransfersTab';
+import AdminContentTab from '../../../components/AdminContentTab';
+import AdminCalendarTab from '../../../components/AdminCalendarTab';
 
 const API = 'http://localhost:8000';
 const F = 'var(--font-inter), Inter, system-ui, sans-serif';
@@ -49,7 +53,7 @@ interface LogEntry {
 }
 
 // ─── Active tab type ────────────────────────────────────────
-type Tab = 'overview' | 'rooms' | 'tours' | 'bookings' | 'staff' | 'upload' | 'files' | 'logs';
+type Tab = 'overview' | 'rooms' | 'tours' | 'bookings' | 'staff' | 'upload' | 'files' | 'logs' | 'hotels' | 'transfers' | 'content' | 'calendar';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -390,7 +394,7 @@ export default function AdminDashboardPage() {
 
           {/* ── Tabs ────────────────────────────────────── */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 32 }}>
-            {(['overview', 'rooms', 'tours', 'bookings', 'staff', 'upload', 'files', 'logs'] as Tab[]).map(tab => (
+            {(['overview', 'rooms', 'tours', 'bookings', 'staff', 'hotels', 'transfers', 'content', 'calendar', 'upload', 'files', 'logs'] as Tab[]).map(tab => (
               <button
                 key={tab}
                 id={`tab-${tab}`}
@@ -402,6 +406,10 @@ export default function AdminDashboardPage() {
                 {tab === 'tours'    && '🏺 Tours'}
                 {tab === 'bookings' && '📅 Bookings'}
                 {tab === 'staff'    && '👥 Team'}
+                {tab === 'hotels'   && '🏨 Hotels'}
+                {tab === 'transfers' && '🚐 Transfers'}
+                {tab === 'content'  && '✏️ Content'}
+                {tab === 'calendar' && '📆 Calendar'}
                 {tab === 'upload'   && '📤 Upload'}
                 {tab === 'files'    && '📁 Files'}
                 {tab === 'logs'     && '📋 Logs'}
@@ -485,6 +493,22 @@ export default function AdminDashboardPage() {
           ══════════════════════════════════════════════ */}
           {activeTab === 'staff' && (
             <AdminStaffTab getToken={getToken} />
+          )}
+
+          {activeTab === 'hotels' && (
+            <AdminHotelsTab getToken={getToken} />
+          )}
+
+          {activeTab === 'transfers' && (
+            <AdminTransfersTab getToken={getToken} />
+          )}
+
+          {activeTab === 'content' && (
+            <AdminContentTab getToken={getToken} />
+          )}
+
+          {activeTab === 'calendar' && (
+            <AdminCalendarTab getToken={getToken} />
           )}
 
           {/* ══════════════════════════════════════════════
