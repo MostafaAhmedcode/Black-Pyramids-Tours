@@ -6,7 +6,7 @@ import TourCard from './TourCard';
 import Link from 'next/link';
 import { tours as staticTours } from '@/data/tours';
 
-const DESTINATIONS = ['All', 'Cairo & Giza', 'Luxor', 'Aswan', 'Alexandria', 'Hurghada', 'Fayoum', 'White Desert', 'Red Sea'] as const;
+const DESTINATIONS = ['All', 'Cairo & Giza', 'Luxor', 'Aswan', 'Alexandria', 'Sinai', 'Hurghada', 'Fayoum', 'White Desert', 'El Minya', 'Siwa Oasis', 'Red Sea'] as const;
 const TOUR_TYPES = ['All', 'Half Day', 'Full Day', 'Multi-Day'] as const;
 const F = 'var(--font-inter), Inter, system-ui, sans-serif';
 
