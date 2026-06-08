@@ -434,12 +434,64 @@ select option:checked {
   border-color: var(--gold);
 }
 
-/* ─── Responsive helpers ─── */
+/* ══════════════════════════════════════════════════
+   RESPONSIVE — mobile-first global overrides
+   Breakpoints: 480px (phone), 640px (large phone),
+                768px (tablet), 1024px (laptop)
+══════════════════════════════════════════════════ */
+
+/* ── Cards: disable lift transform on touch devices to prevent stuck hover ── */
+@media (hover: none) {
+  .card:hover { transform: none; }
+  .btn-primary:hover, .btn-secondary:hover, .btn-burgundy:hover { transform: none; filter: none; }
+}
+
+/* ── Section padding — reduce on mobile ── */
+@media (max-width: 768px) {
+  .section-pad { padding: 72px 20px 56px !important; }
+}
+@media (max-width: 480px) {
+  .section-pad { padding: 56px 16px 44px !important; }
+}
+
+/* ── All grids: force single column on phones ── */
 @media (max-width: 640px) {
-  .btn-primary, .btn-secondary {
-    padding: 12px 24px;
-    font-size: 0.62rem;
+  /* Override all repeat(auto-fit/fill, minmax(X, 1fr)) grids */
+  [style*="minmax(320"] { grid-template-columns: 1fr !important; }
+  [style*="minmax(340"] { grid-template-columns: 1fr !important; }
+  [style*="minmax(280"] { grid-template-columns: 1fr !important; }
+  [style*="minmax(260"] { grid-template-columns: 1fr !important; }
+  [style*="minmax(240"] { grid-template-columns: 1fr !important; }
+  [style*="minmax(200"] { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+/* ── Buttons ── */
+@media (max-width: 640px) {
+  .btn-primary, .btn-secondary, .btn-burgundy {
+    padding: 12px 20px;
+    font-size: 0.66rem;
+    min-height: 44px;
   }
+}
+@media (max-width: 480px) {
+  .btn-primary, .btn-secondary, .btn-burgundy {
+    padding: 11px 16px;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+  }
+}
+
+/* ── Filter pills: smaller on mobile ── */
+@media (max-width: 480px) {
+  .filter-pill {
+    font-size: 0.72rem;
+    padding: 7px 14px;
+  }
+}
+
+/* ── Section headings ── */
+@media (max-width: 480px) {
+  .section-label { font-size: 0.7rem; letter-spacing: 0.2em; }
 }
 
 /* ─── Blog Detail Grid ─── */

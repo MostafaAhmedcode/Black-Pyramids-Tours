@@ -176,7 +176,7 @@ function HomeInner() {
       <Hero />
 
       {/* ── 1. SERVICES SECTION (4 cards) ── */}
-      <section id="services" style={{ padding: '112px 24px 80px', background: 'linear-gradient(180deg, var(--charcoal) 0%, #202020 100%)' }}>
+      <section id="services" className="section-pad" style={{ background: 'linear-gradient(180deg, var(--charcoal) 0%, #202020 100%)' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
           <ScrollObserver>
             <SectionHeading
@@ -255,7 +255,7 @@ function HomeInner() {
       </section>
 
       {/* ── 2. TOURS SECTION (6 cards) ── */}
-      <section id="tours" style={{ padding: '112px 24px 80px', background: '#1e1e1e' }}>
+      <section id="tours" className="section-pad" style={{ background: '#1e1e1e' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
           <ScrollObserver>
             <SectionHeading
@@ -276,7 +276,7 @@ function HomeInner() {
       </section>
 
       {/* ── 3. HOTELS SECTION (6 hotels + Star rating filter) ── */}
-      <section id="hotels" style={{ padding: '112px 24px 80px', background: 'linear-gradient(180deg, #1e1e1e 0%, var(--charcoal) 100%)' }}>
+      <section id="hotels" className="section-pad" style={{ background: 'linear-gradient(180deg, #1e1e1e 0%, var(--charcoal) 100%)' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
           <ScrollObserver>
             <SectionHeading
@@ -347,7 +347,7 @@ function HomeInner() {
       </section>
 
       {/* ── 4. DESTINATIONS SECTION (8 locations + Zoom hovers) ── */}
-      <section id="destinations" style={{ padding: '112px 24px 80px', background: '#1c1c1c' }}>
+      <section id="destinations" className="section-pad" style={{ background: '#1c1c1c' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
           <ScrollObserver>
             <SectionHeading
@@ -449,7 +449,7 @@ function HomeInner() {
       </section>
 
       {/* ── 5. WHY CHOOSE US (Stats & Promises) ── */}
-      <section id="why-us" style={{ padding: '112px 24px 80px', background: 'linear-gradient(180deg, #1c1c1c 0%, var(--charcoal) 100%)' }}>
+      <section id="why-us" className="section-pad" style={{ background: 'linear-gradient(180deg, #1c1c1c 0%, var(--charcoal) 100%)' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
           <ScrollObserver>
             <SectionHeading
@@ -575,7 +575,7 @@ function HomeInner() {
       </section>
 
       {/* ── 6. TESTIMONIALS SECTION (3 guests) ── */}
-      <section id="testimonials" style={{ padding: '112px 24px 80px', background: '#1c1c1c' }}>
+      <section id="testimonials" className="section-pad" style={{ background: '#1c1c1c' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
           <ScrollObserver>
             <SectionHeading
@@ -693,7 +693,7 @@ function HomeInner() {
 
       {/* ── 8. EGYPT BLOG SECTION ── */}
       {/* (Integrating an elegant preview section to fit design system) */}
-      <section id="blog" style={{ padding: '112px 24px 80px', background: 'var(--charcoal)' }}>
+      <section id="blog" className="section-pad" style={{ background: 'var(--charcoal)' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
           <ScrollObserver>
             <SectionHeading
