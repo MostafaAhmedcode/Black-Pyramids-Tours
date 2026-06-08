@@ -58,7 +58,7 @@ export default function TourCard({ tour, index }: TourCardProps) {
         background: 'linear-gradient(160deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.015) 100%)',
         border: hovered ? '1px solid rgba(201,168,76,0.55)' : '1px solid rgba(201,168,76,0.18)',
         boxShadow: hovered ? '0 24px 64px rgba(0,0,0,0.55), 0 0 40px rgba(201,168,76,0.08)' : '0 4px 20px rgba(0,0,0,0.3)',
-        transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        transition: 'border-color 0.35s ease, box-shadow 0.35s ease',
         position: 'relative',
       }}
     >

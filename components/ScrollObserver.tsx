@@ -41,11 +41,14 @@ export default function ScrollObserver({
   return (
     <div
       ref={ref}
-      className={`transition-all duration-700 ${
-        isVisible
-          ? 'opacity-100 translate-y-0'
-          : 'opacity-0 translate-y-8'
-      } ${className}`}
+      className={className}
+      style={{
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(28px)',
+        transition: 'opacity 0.7s ease, transform 0.7s ease',
+        // CRITICAL: pointer-events always enabled so buttons work on first click
+        pointerEvents: 'auto',
+      }}
     >
       {children}
     </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const API = 'http://localhost:8000';
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 const F = 'var(--font-inter), Inter, system-ui, sans-serif';
 
 export default function AdminBookingsTab({ getToken }: { getToken: () => string }) {

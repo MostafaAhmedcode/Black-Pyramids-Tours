@@ -7,130 +7,6 @@ import { egyptDestinationsBlogs } from '@/data/egyptDestinationsBlogs';
 
 const F = 'var(--font-inter), Inter, system-ui, sans-serif';
 
-// Destination-specific fallback blog content (used only if no tour-specific blog exists)
-const destinationBlogs: Record<string, { intro: string; history: string; tips: string[]; bestTime: string }> = {
-  'Cairo & Giza': {
-    intro: 'Cairo is one of the world\'s great megacities — a place where ancient monuments rise above a modern metropolis of 20 million souls. The Giza Plateau, just west of the city, holds the last surviving Wonder of the Ancient World: the Great Pyramids, built over 4,500 years ago with a precision that still baffles engineers today.',
-    history: 'The pyramids were constructed during the Fourth Dynasty of the Old Kingdom, between roughly 2580 and 2510 BCE. Pharaoh Khufu (Cheops) commissioned the Great Pyramid — the largest — as his eternal tomb. His son Khafre built the second pyramid and the iconic Great Sphinx, a limestone guardian with the body of a lion and the face of a king. Memphis, the ancient capital, and Saqqara, the oldest stone complex on Earth, complete the picture of Egypt\'s earliest civilization.',
-    tips: [
-      'Start early — the plateau opens at 8 AM and crowds build fast after 10 AM',
-      'Bring cash in Egyptian pounds for camel rides, souvenir vendors, and tips',
-      'The Sound & Light Show at the Sphinx runs nightly — a magical evening option',
-      'Wear comfortable shoes; the terrain is sandy and uneven',
-      'Haggling is expected and part of the culture — enjoy it',
-    ],
-    bestTime: 'October to April — mild temperatures between 15–25°C. Avoid July–August when midday heat exceeds 40°C.',
-  },
-  'Luxor': {
-    intro: 'Luxor is the world\'s greatest open-air museum. Built on the ruins of ancient Thebes, the capital of Egypt\'s New Kingdom, it holds more ancient monuments per square kilometre than anywhere else on Earth. The Nile divides the city into the East Bank (temples of the living) and the West Bank (tombs of the dead).',
-    history: 'For over 500 years, from 1550 to 1070 BCE, Thebes was the most powerful city in the world. Pharaohs like Ramses II, Tutankhamun, and Hatshepsut built their temples and tombs here. The Valley of the Kings alone contains 63 royal tombs, including the legendary tomb of Tutankhamun discovered by Howard Carter in 1922 with its treasures intact after 3,300 years.',
-    tips: [
-      'The Valley of the Kings ticket covers 3 tombs — choose wisely; Tutankhamun costs extra',
-      'Hire a local guide for the West Bank — context transforms the experience',
-      'Karnak Temple is best visited at sunrise before tour groups arrive',
-      'A felucca (traditional sailboat) ride at sunset is unmissable',
-      'The Luxor Museum is small but world-class — don\'t skip it',
-    ],
-    bestTime: 'November to February — cool and dry, perfect for exploring. Summer temperatures regularly hit 45°C.',
-  },
-  'Aswan': {
-    intro: 'Aswan is Egypt\'s southernmost city and its most serene. Where Cairo buzzes and Luxor dazzles, Aswan simply breathes. The Nile here is at its most beautiful — wide, clear, and dotted with granite islands. Nubian culture, distinct from Arab Egypt, gives the city its own music, cuisine, and colour.',
-    history: 'Ancient Aswan — called Swenet — was Egypt\'s gateway to sub-Saharan Africa, a trading post for gold, ivory, and slaves. The granite quarried here built the obelisks and statues of pharaohs across Egypt. The Unfinished Obelisk, still lying in its quarry, would have been the largest ever cut at 42 metres. The High Dam, completed in 1970, created Lake Nasser and required the relocation of the Abu Simbel temples — one of history\'s greatest engineering feats.',
-    tips: [
-      'Abu Simbel is 280 km south — fly or take the early morning convoy',
-      'The Philae Temple on Agilkia Island is reached by motorboat — stunning at sunset',
-      'Visit a Nubian village for authentic hospitality and colourful architecture',
-      'The Botanical Garden on Kitchener\'s Island is a peaceful escape',
-      'Aswan\'s spice market is the best in Egypt for saffron, hibiscus, and karkade tea',
-    ],
-    bestTime: 'October to March — warm days and cool nights. Aswan is Egypt\'s hottest city; summer is brutal.',
-  },
-  'Alexandria': {
-    intro: 'Alexandria was once the intellectual capital of the ancient world — home to the Great Library, the Lighthouse (one of the Seven Wonders), and the philosopher Hypatia. Founded by Alexander the Great in 331 BCE, it blends Greek, Roman, Jewish, and Arab heritage into a Mediterranean city unlike any other in Egypt.',
-    history: 'At its peak under the Ptolemaic dynasty, Alexandria\'s Great Library held 700,000 scrolls — the sum of human knowledge. Cleopatra VII, the last pharaoh, ruled from here. The city\'s ancient monuments now lie largely underwater in the Eastern Harbour, slowly being excavated by marine archaeologists. The modern Bibliotheca Alexandrina, opened in 2002, honours the ancient library\'s legacy.',
-    tips: [
-      'The Catacombs of Kom el-Shoqafa are the finest Greco-Roman underground tombs in Egypt',
-      'Qaitbay Citadel stands on the exact site of the ancient Lighthouse',
-      'The Corniche seafront walk is best at dusk with fresh seafood from street vendors',
-      'Montaza Palace gardens are a lovely escape from the city centre',
-      'Alexandria\'s coffee culture is distinct — try a traditional ahwa (coffeehouse)',
-    ],
-    bestTime: 'April to June and September to November — Mediterranean climate, warm but not scorching.',
-  },
-  'Sinai': {
-    intro: 'The Sinai Peninsula is where Africa meets Asia, where the Red Sea splits into two gulfs, and where Moses is said to have received the Ten Commandments. It\'s a land of dramatic contrasts: turquoise coral reefs below, jagged granite mountains above, and Bedouin culture threading through it all.',
-    history: 'Mount Sinai (Jebel Musa) has been a pilgrimage site for Jews, Christians, and Muslims for millennia. St. Catherine\'s Monastery at its base, founded in 565 CE, is the world\'s oldest continuously operating Christian monastery and holds the world\'s second-largest collection of ancient manuscripts after the Vatican. The Sinai was also the site of three Arab-Israeli wars and was returned to Egypt in 1982.',
-    tips: [
-      'Climb Mount Sinai at night to reach the summit for sunrise — a life-changing experience',
-      'St. Catherine\'s Monastery is only open mornings; arrive early',
-      'Dahab\'s Blue Hole is world-famous for diving but respect its depth — it\'s claimed many lives',
-      'Bedouin guides are essential for desert treks — they know every water source',
-      'Sharm el-Sheikh\'s Ras Mohammed National Park has Egypt\'s finest coral reefs',
-    ],
-    bestTime: 'March to May and September to November — comfortable for hiking and diving.',
-  },
-  'Hurghada': {
-    intro: 'Hurghada transformed from a small fishing village in the 1980s into Egypt\'s premier Red Sea resort. The coral reefs here are among the most biodiverse in the world, and the year-round sunshine makes it a reliable escape from European winters. Beyond the beach, desert safaris and Bedouin camps offer a different kind of adventure.',
-    history: 'The Red Sea has been a trade route since antiquity — ancient Egyptians sailed it to the land of Punt for incense and gold. Hurghada\'s modern history began with oil exploration in the 1910s, but tourism only took off after the 1973 peace with Israel opened the region. Today it receives over 4 million visitors annually.',
-    tips: [
-      'Snorkelling at Giftun Island is better than most paid dive sites elsewhere in the world',
-      'Book a liveaboard for 3–7 days to reach the remote Brothers Islands and Daedalus Reef',
-      'The old town (El Dahar) has authentic Egyptian restaurants away from the resort strip',
-      'Quad biking and camel rides into the Eastern Desert are excellent at sunset',
-      'Avoid the beach in July–August — water temperature exceeds 32°C and jellyfish appear',
-    ],
-    bestTime: 'October to April — warm water, clear visibility, and manageable air temperatures.',
-  },
-  'Fayoum': {
-    intro: 'Fayoum is Egypt\'s hidden gem — a lush oasis depression 100 km southwest of Cairo, fed by a branch of the Nile. It\'s home to Lake Qarun (ancient Lake Moeris), the Wadi El-Rayan waterfalls, and some of the world\'s most important fossil sites. It\'s the Egypt that most tourists never see.',
-    history: 'The ancient Egyptians called it Ta-She — "the land of the lake." The Faiyum Portraits, painted on wooden panels in the 1st–3rd centuries CE, are the world\'s oldest surviving realistic portraits and can be seen in museums worldwide. The area was heavily developed by the Ptolemies, who drained much of the ancient lake for farmland.',
-    tips: [
-      'Wadi El-Rayan\'s waterfalls are Egypt\'s only natural waterfalls — visit at dawn',
-      'Wadi El-Hitan (Valley of the Whales) is a UNESCO site with 40-million-year-old whale fossils',
-      'Lake Qarun is excellent for birdwatching — over 200 species recorded',
-      'The pottery village of Tunis produces some of Egypt\'s finest ceramics',
-      'Fayoum is a day trip from Cairo but staying overnight reveals a completely different pace',
-    ],
-    bestTime: 'October to April — spring wildflowers in March are spectacular.',
-  },
-  'White Desert': {
-    intro: 'The White Desert (Sahara el-Beyda) is one of the most surreal landscapes on Earth. Chalk-white rock formations sculpted by millennia of wind erosion rise from the golden sand like giant mushrooms, icebergs, and abstract sculptures. Camping here under a sky blazing with stars is a transformative experience.',
-    history: 'The White Desert sits within the Farafra Depression, one of Egypt\'s five major oases. The chalk formations are the remnants of a seabed from 80 million years ago when the Sahara was covered by a shallow sea. The area was declared a national park in 2002. Nearby Bahariya Oasis was the site of a remarkable 1999 discovery: the Valley of the Golden Mummies, with over 250 Greco-Roman mummies.',
-    tips: [
-      'Camping overnight is the only way to truly experience the White Desert — book a guided camp',
-      'The Black Desert and Crystal Mountain are on the route from Bahariya — don\'t skip them',
-      'Bring warm layers — desert nights drop to near freezing even in October',
-      'A 4WD vehicle is essential; the terrain is not accessible by regular car',
-      'The best light for photography is the golden hour just after sunrise',
-    ],
-    bestTime: 'October to March — cool nights make camping comfortable. Summer is dangerously hot.',
-  },
-  'El Minya': {
-    intro: 'El Minya is Middle Egypt\'s cultural heart and one of the country\'s most undervisited regions. It sits on the Nile between Cairo and Luxor, surrounded by some of Egypt\'s most important ancient sites — many of which see only a handful of tourists per day. This is Egypt as it was before mass tourism.',
-    history: 'The region was the capital of ancient Egypt during the Amarna Period (1353–1336 BCE), when the "heretic pharaoh" Akhenaten abandoned the old gods and built a new city, Akhetaten (modern Amarna), dedicated to the sun disc Aten. The tombs of Beni Hassan, carved into limestone cliffs, contain some of the finest Middle Kingdom paintings in existence, depicting daily life with extraordinary detail.',
-    tips: [
-      'Amarna (Tell el-Amarna) requires a ferry across the Nile — hire a local guide',
-      'Beni Hassan tombs are best in morning light when the paintings are most vivid',
-      'Tuna el-Gebel has a fascinating animal necropolis with mummified ibises and baboons',
-      'El Minya is best visited as part of a Nile cruise or multi-day road trip',
-      'Security escorts are sometimes required — your tour operator will arrange this',
-    ],
-    bestTime: 'November to February — mild temperatures ideal for site exploration.',
-  },
-  'Red Sea': {
-    intro: 'The Egyptian Red Sea coast stretches over 1,900 km from Suez to the Sudanese border, offering world-class diving, pristine beaches, and a string of resort towns. The coral reefs here are among the most biodiverse on the planet, with over 1,000 species of fish and 200 species of coral.',
-    history: 'The Red Sea has been a vital trade route for 5,000 years. Ancient Egyptians built ports here to trade with Punt and Arabia. The Suez Canal, opened in 1869, transformed it into one of the world\'s busiest shipping lanes. The reefs were largely unknown to Western divers until Hans Hass and Jacques Cousteau explored them in the 1950s, revealing an underwater world of extraordinary richness.',
-    tips: [
-      'Marsa Alam is less developed than Hurghada and has better reef access from shore',
-      'Dugongs (sea cows) can be spotted at Marsa Abu Dabbab — a rare and magical encounter',
-      'The SS Thistlegorm wreck near Sharm is one of the world\'s top 10 dive sites',
-      'Kite surfing at Ras Sudr and Safaga is world-class — consistent winds year-round',
-      'Night dives reveal a completely different reef ecosystem — book one if you\'re certified',
-    ],
-    bestTime: 'Year-round, but October to May is ideal. Water visibility peaks in winter at 30+ metres.',
-  },
-};
-
 function GallerySection({ images, title }: { images: string[]; title: string }) {
   const [active, setActive] = useState(0);
 
@@ -511,6 +387,27 @@ export default function TourPageClient({ tour }: { tour: Tour }) {
           color: #fff;
           font-family: ${F};
           min-height: 48px;
+        }
+        .booking-select {
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          appearance: none;
+          padding-right: 38px;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C9A84C' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 14px center;
+          cursor: pointer;
+        }
+        .booking-select option {
+          background-color: #07101f !important;
+          color: #F5E6C8 !important;
+        }
+        .booking-select option:checked {
+          background-color: #1a2240 !important;
+          color: #DFCA7D !important;
+        }
+        .booking-select:hover {
+          border-color: rgba(201,168,76,0.65);
         }
         .booking-input:focus,
         .booking-select:focus {

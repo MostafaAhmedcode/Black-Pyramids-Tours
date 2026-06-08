@@ -217,15 +217,17 @@ export default function Hero() {
 
         {/* ── SEARCH BAR ── */}
         <div style={{
-          position:'absolute', bottom:'calc(12% + 8px)', left:'50%', transform:'translateX(-50%)',
+          position:'absolute', bottom:'calc(12% + 8px)', left:'50%',
+          transform:phase>=6?'translateX(-50%) translateY(0)':'translateX(-50%) translateY(10px)',
           width:'min(960px,94vw)', zIndex:10,
           opacity:phase>=6?1:0,
-          translateY:phase>=6?0:10,
           transition:'all 0.7s cubic-bezier(0.22,1,0.36,1)',
         }}>
           <div style={{
-            background:'rgba(8,8,8,0.88)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)',
-            border:'1px solid rgba(201,168,76,0.28)', display:'flex', alignItems:'stretch',
+            background:'rgba(8,8,8,0.92)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)',
+            border:'1px solid rgba(201,168,76,0.35)',
+            boxShadow:'0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(201,168,76,0.08)',
+            display:'flex', alignItems:'stretch',
             flexWrap:'wrap',
           }}>
             {/* FROM country */}
@@ -242,14 +244,14 @@ export default function Hero() {
             <div style={dividerStyle}/>
             {/* Activity */}
             <SearchCell icon="🔺" label="Activity" flex={1.1}>
-              <select value={search.activity} onChange={e=>setSearch(s=>({...s,activity:e.target.value}))} style={searchInputStyle}>
+              <select value={search.activity} onChange={e=>setSearch(s=>({...s,activity:e.target.value}))} style={searchSelectStyle}>
                 {ACTIVITIES.map(a=><option key={a} value={a}>{a}</option>)}
               </select>
             </SearchCell>
             <div style={dividerStyle}/>
             {/* Duration */}
             <SearchCell icon="⏱" label="Duration" flex={1.0}>
-              <select value={search.duration} onChange={e=>setSearch(s=>({...s,duration:e.target.value}))} style={searchInputStyle}>
+              <select value={search.duration} onChange={e=>setSearch(s=>({...s,duration:e.target.value}))} style={searchSelectStyle}>
                 {DURATIONS.map(d=><option key={d} value={d}>{d}</option>)}
               </select>
             </SearchCell>
@@ -429,7 +431,17 @@ export default function Hero() {
               </div>
               <div style={{marginBottom:14}}>
                 <label style={labelStyle}>Guests</label>
-                <select value={form.guests} onChange={e=>setForm(f=>({...f,guests:e.target.value}))} style={inputStyle}>
+                <select value={form.guests} onChange={e=>setForm(f=>({...f,guests:e.target.value}))} style={{
+                  ...inputStyle,
+                  backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23C9A84C' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")",
+                  backgroundRepeat:'no-repeat',
+                  backgroundPosition:'right 12px center',
+                  WebkitAppearance:'none',
+                  MozAppearance:'none',
+                  appearance:'none' as const,
+                  paddingRight:'34px',
+                  cursor:'pointer',
+                }}>
                   {['1','2','3','4','5','6','7','8+'].map(n=>(<option key={n} value={n}>{n} {parseInt(n)===1?'Guest':'Guests'}</option>))}
                 </select>
               </div>
@@ -595,10 +607,11 @@ function Field({label,type,value,onChange,placeholder,required}:{label:string;ty
 /* ── SEARCH CELL ── */
 function SearchCell({icon,label,flex,children}:{icon:string;label:string;flex:number;children:React.ReactNode}) {
   return (
-    <div style={{flex,minWidth:0,padding:'10px 14px',display:'flex',flexDirection:'column',justifyContent:'center',gap:3}}>
+    <div style={{flex,minWidth:0,padding:'11px 16px',display:'flex',flexDirection:'column',justifyContent:'center',gap:4}}>
       <div style={{display:'flex',alignItems:'center',gap:5}}>
         <span style={{fontSize:'0.72rem'}}>{icon}</span>
-        <span style={{fontFamily:'var(--font-inter),Inter,sans-serif',fontSize:'0.54rem',fontWeight:700,letterSpacing:'0.2em',textTransform:'uppercase',color:'var(--gold)'}}>{label}</span>
+        {/* Gold label — stays on the dark search bar, always visible */}
+        <span style={{fontFamily:'var(--font-inter),Inter,sans-serif',fontSize:'0.52rem',fontWeight:700,letterSpacing:'0.22em',textTransform:'uppercase',color:'rgba(201,168,76,0.85)'}}>{label}</span>
       </div>
       {children}
     </div>
@@ -606,23 +619,67 @@ function SearchCell({icon,label,flex,children}:{icon:string;label:string;flex:nu
 }
 
 const searchInputStyle: React.CSSProperties = {
-  background:'none', border:'none', outline:'none',
-  color:'var(--sand)', fontFamily:'var(--font-inter),Inter,sans-serif',
-  fontSize:'0.82rem', width:'100%', padding:0,
+  /* Keep background transparent so SearchCell container backdrop shows through.
+     Text colour must be explicit so it stays readable on the dark search bar. */
+  background: 'transparent',
+  border: 'none',
+  outline: 'none',
+  color: '#F5E6C8',
+  fontFamily: 'var(--font-inter),Inter,sans-serif',
+  fontSize: '0.82rem',
+  width: '100%',
+  padding: 0,
+};
+/* Separate style for <select> in search bar.
+ * Must use a concrete dark background — inline styles override !important CSS,
+ * so we set the colour here directly rather than relying on globals.css.
+ */
+const searchSelectStyle: React.CSSProperties = {
+  background: '#0d0b06',
+  border: 'none',
+  outline: 'none',
+  color: '#F5E6C8',
+  fontFamily: 'var(--font-inter),Inter,sans-serif',
+  fontSize: '0.82rem',
+  width: '100%',
+  padding: '2px 28px 2px 0',
+  cursor: 'pointer',
+  /* Custom gold chevron replaces native arrow */
+  backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23C9A84C' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")",
+  backgroundRepeat: 'no-repeat',
+  backgroundPosition: 'right 4px center',
+  WebkitAppearance: 'none',
+  MozAppearance: 'none',
+  appearance: 'none' as const,
 };
 const dividerStyle: React.CSSProperties = {
-  width:1, background:'rgba(201,168,76,0.18)', flexShrink:0, margin:'8px 0',
+  width: 1,
+  background: 'rgba(201,168,76,0.22)',
+  flexShrink: 0,
+  margin: '8px 0',
 };
 const labelStyle: React.CSSProperties = {
-  display:'block',fontFamily:'var(--font-inter),Inter,sans-serif',
-  fontSize:'0.6rem',fontWeight:700,letterSpacing:'0.18em',
-  textTransform:'uppercase',color:'var(--sand-3)',marginBottom:6,
+  display: 'block',
+  fontFamily: 'var(--font-inter),Inter,sans-serif',
+  fontSize: '0.6rem',
+  fontWeight: 700,
+  letterSpacing: '0.18em',
+  textTransform: 'uppercase',
+  /* Slightly brighter than sand-3 so labels are easier to read */
+  color: '#D4C4A0',
+  marginBottom: 6,
 };
 const inputStyle: React.CSSProperties = {
-  width:'100%',background:'rgba(255,255,255,0.04)',
-  border:'1px solid rgba(201,168,76,0.22)',color:'var(--sand)',
-  padding:'10px 13px',fontFamily:'var(--font-inter),Inter,sans-serif',
-  fontSize:'0.83rem',outline:'none',
+  width: '100%',
+  /* Dark opaque background ensures text is always visible */
+  background: 'rgba(18, 14, 8, 0.82)',
+  border: '1px solid rgba(201,168,76,0.28)',
+  color: '#F5E6C8',
+  padding: '10px 13px',
+  fontFamily: 'var(--font-inter),Inter,sans-serif',
+  fontSize: '0.83rem',
+  outline: 'none',
+  transition: 'border-color 0.25s ease',
 };
 const backBtnStyle: React.CSSProperties = {
   background:'none',border:'none',cursor:'pointer',

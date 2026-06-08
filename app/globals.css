@@ -13,6 +13,15 @@
   --burgundy: #5C1A1A;
   --burgundy-hover: #7E2424;
   --navy: var(--charcoal-dark);
+
+  /* Input/select system colours — used site-wide */
+  --input-bg:           rgba(18, 14, 8, 0.92);
+  --input-border:       rgba(201, 168, 76, 0.28);
+  --input-border-focus: rgba(201, 168, 76, 0.75);
+  --input-text:         #F5E6C8;
+  --input-placeholder:  rgba(187, 167, 134, 0.55);
+  --select-bg:          #1a1308;    /* safe dark hex for <option> rendering */
+  --select-text:        #F5E6C8;
 }
 
 *,
@@ -44,6 +53,78 @@ img {
 ::-webkit-scrollbar-track { background: var(--charcoal); }
 ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+/* ─── Global Form Elements ─── */
+/* Inputs & Textareas */
+input,
+textarea {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--input-text);
+  font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  outline: none;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--input-placeholder);
+}
+input:focus,
+textarea:focus {
+  border-color: var(--input-border-focus);
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.12), 0 0 14px rgba(201, 168, 76, 0.08);
+}
+
+/* ─── Select Dropdowns — CRITICAL contrast fix ─── */
+/*
+ * Browser renders <option> with OS-native chrome (often white bg).
+ * We force a dark background & light text on BOTH the select wrapper
+ * and every option element so they are always readable on any OS/theme.
+ */
+select {
+  background-color: var(--select-bg) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C9A84C' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding-right: 34px !important;
+  color: var(--select-text) !important;
+  border: 1px solid var(--input-border);
+  outline: none;
+  cursor: pointer;
+  font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+select:focus {
+  border-color: var(--input-border-focus);
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.12);
+}
+select:hover {
+  border-color: rgba(201, 168, 76, 0.5);
+}
+
+/* Force dark theme on <option> elements — works in Chrome, Firefox, Edge */
+select option {
+  background-color: #1a1308 !important;
+  color: #F5E6C8 !important;
+  font-family: system-ui, sans-serif;
+  font-size: 0.9rem;
+  padding: 6px 8px;
+}
+select option:hover,
+select option:focus,
+select option:checked {
+  background-color: #2e2208 !important;
+  color: #DFCA7D !important;
+}
+/* Firefox-specific additional override */
+@-moz-document url-prefix() {
+  select {
+    background-color: #1a1308 !important;
+  }
+}
 
 /* ─── Font helpers ─── */
 .font-heading { font-family: var(--font-playfair), 'Playfair Display', Georgia, serif; letter-spacing: 0.02em; }
@@ -94,7 +175,9 @@ img {
 
 /* ─── Buttons ─── */
 .btn-primary {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: linear-gradient(135deg, var(--gold-dark), var(--gold), var(--gold-light));
   color: var(--charcoal-dark);
   font-family: var(--font-playfair), 'Playfair Display', serif;
@@ -105,24 +188,36 @@ img {
   padding: 14px 32px;
   border: none;
   cursor: pointer;
-  transition: all 0.35s ease;
   position: relative;
   overflow: hidden;
   white-space: nowrap;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.28s ease,
+              filter 0.28s ease;
+  box-shadow: 0 4px 18px rgba(201, 168, 76, 0.3), inset 0 1px 0 rgba(255,255,255,0.18);
 }
 .btn-primary::after {
   content: '';
   position: absolute;
-  inset: 0;
-  background: rgba(255,255,255,0);
-  transition: background 0.3s;
+  top: 0; left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
+  transition: left 0.45s ease;
+  pointer-events: none;
 }
 .btn-primary:hover {
-  box-shadow: 0 6px 28px rgba(201,168,76,0.45);
-  transform: translateY(-2px);
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 10px 32px rgba(201, 168, 76, 0.5), 0 0 20px rgba(201, 168, 76, 0.18);
+  filter: brightness(1.06);
 }
 .btn-primary:hover::after {
-  background: rgba(255,255,255,0.08);
+  left: 160%;
+}
+.btn-primary:active {
+  transform: translateY(-1px) scale(0.99);
+  box-shadow: 0 4px 14px rgba(201, 168, 76, 0.4);
+  transition-duration: 0.1s;
 }
 
 .btn-secondary {
@@ -147,9 +242,12 @@ img {
 }
 
 .btn-burgundy {
-  display: inline-block;
-  background: var(--burgundy);
-  color: var(--sand);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: linear-gradient(135deg, var(--gold-dark), var(--gold), var(--gold-light));
+  color: var(--charcoal-dark);
   font-family: var(--font-playfair), 'Playfair Display', serif;
   font-size: 0.8rem;
   font-weight: 700;
@@ -158,13 +256,37 @@ img {
   padding: 14px 32px;
   border: none;
   cursor: pointer;
-  transition: all 0.35s ease;
+  position: relative;
+  overflow: hidden;
   white-space: nowrap;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.28s ease,
+              filter 0.28s ease;
+  box-shadow: 0 4px 18px rgba(201, 168, 76, 0.35), inset 0 1px 0 rgba(255,255,255,0.18);
+}
+/* Shimmer sweep on hover */
+.btn-burgundy::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
+  transition: left 0.45s ease;
+  pointer-events: none;
 }
 .btn-burgundy:hover {
-  background: var(--burgundy-hover);
-  box-shadow: 0 6px 28px rgba(92,26,26,0.45);
-  transform: translateY(-2px);
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 10px 32px rgba(201, 168, 76, 0.55), 0 0 24px rgba(201, 168, 76, 0.2), inset 0 1px 0 rgba(255,255,255,0.18);
+  filter: brightness(1.06);
+}
+.btn-burgundy:hover::before {
+  left: 160%;
+}
+.btn-burgundy:active {
+  transform: translateY(-1px) scale(0.99);
+  box-shadow: 0 4px 14px rgba(201, 168, 76, 0.4);
+  transition-duration: 0.1s;
 }
 
 /* ─── Cards ─── */
@@ -250,6 +372,7 @@ img {
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
   transform: translateX(-100%);
   transition: none;
+  pointer-events: none;
 }
 .shimmer-wrap:hover::after {
   animation: shimmerMove 0.7s ease forwards;
@@ -341,4 +464,76 @@ img {
   .blog-display-grid {
     grid-template-columns: 3fr 1fr;
   }
+}
+
+/* ─── Search bar select overrides ─── */
+/* Selects inside the hero search bar are on an already-dark backdrop,
+   but we still need the <option> list to be dark when it pops open.
+   This targets the hero search bar's dark container context. */
+.hero-search-bar select {
+  background-color: #0d0b06 !important;
+  color: #F5E6C8 !important;
+}
+
+/* ─── Typography polish helpers ─── */
+.text-shadow-luxury {
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.7), 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* ─── Gold glow — applies a subtle radial glow to primary CTAs on hover ─── */
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-burgundy:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+/* ─── Card inner highlight — subtle edge light on hover ─── */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(201, 168, 76, 0.06) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+.card:hover::before {
+  opacity: 1;
+}
+
+/* ─── Filter pill keyboard focus ─── */
+.filter-pill:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* ─── Improved section separation ─── */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.25) 30%, rgba(201, 168, 76, 0.25) 70%, transparent);
+  margin: 0;
+}
+
+/* ─── Luxury quote pull text ─── */
+.luxury-quote {
+  font-family: var(--font-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(1.1rem, 2.2vw, 1.45rem);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--sand-2);
+  line-height: 1.8;
+  position: relative;
+  padding-left: 24px;
+}
+.luxury-quote::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--gold-dark), var(--gold-light));
+  border-radius: 2px;
 }

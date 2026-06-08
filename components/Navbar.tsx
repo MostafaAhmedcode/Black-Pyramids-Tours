@@ -227,9 +227,13 @@ export default function Navbar() {
           background: linear-gradient(135deg, var(--gold-dark), var(--gold), var(--gold-light));
           border: 1px solid rgba(223, 202, 125, 0.5);
           box-shadow: 0 10px 24px rgba(201, 168, 76, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.18);
-          transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+          transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+                      box-shadow 0.28s ease,
+                      filter 0.28s ease;
           white-space: nowrap;
           flex-shrink: 0;
+          position: relative;
+          overflow: hidden;
         }
         .site-nav-cta {
           min-height: 46px;
@@ -245,11 +249,30 @@ export default function Navbar() {
           font-size: 0.72rem;
           line-height: 1;
         }
+        .site-nav-cta::before,
+        .site-mobile-cta::before {          content: '';
+          position: absolute;
+          top: 0; left: -100%;
+          width: 60%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
+          transition: left 0.45s ease;
+          pointer-events: none;
+        }
         .site-nav-cta:hover,
         .site-mobile-cta:hover {
-          transform: translateY(-2px);
-          filter: brightness(1.03);
-          box-shadow: 0 14px 30px rgba(201, 168, 76, 0.36), 0 0 24px rgba(201, 168, 76, 0.18);
+          transform: translateY(-3px) scale(1.03);
+          filter: brightness(1.06);
+          box-shadow: 0 14px 30px rgba(201, 168, 76, 0.5), 0 0 24px rgba(201, 168, 76, 0.18);
+        }
+        .site-nav-cta:hover::before,
+        .site-mobile-cta:hover::before {
+          left: 160%;
+        }
+        .site-nav-cta:active,
+        .site-mobile-cta:active {
+          transform: translateY(-1px) scale(0.99);
+          transition-duration: 0.1s;
         }
         .site-menu-toggle {
           background: rgba(10, 10, 10, 0.62);

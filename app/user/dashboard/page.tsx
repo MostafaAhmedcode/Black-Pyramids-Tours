@@ -20,6 +20,7 @@ interface Booking {
 }
 
 export default function GuestDashboardPage() {
+  const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
   const [email, setEmail] = useState<string | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,7 +48,7 @@ export default function GuestDashboardPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:8000/api/bookings/customer', {
+      const response = await fetch(`${API}/api/bookings/customer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -79,7 +80,7 @@ export default function GuestDashboardPage() {
     setSelectedReceiptHtml(null);
 
     try {
-      const response = await fetch('http://localhost:8000/api/bookings/receipt', {
+      const response = await fetch(`${API}/api/bookings/receipt`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

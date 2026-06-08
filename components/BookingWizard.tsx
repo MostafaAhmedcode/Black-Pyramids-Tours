@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 interface PricingTier {
   label: string;
@@ -116,7 +117,7 @@ export default function BookingWizard({ itemType, item, onCancel }: BookingWizar
     setAvailabilityMessage({ status: 'idle', text: '' });
 
     try {
-      const resp = await fetch('http://localhost:8000/api/bookings/check-availability', {
+      const resp = await fetch(`${API}/api/bookings/check-availability`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -179,7 +180,7 @@ export default function BookingWizard({ itemType, item, onCancel }: BookingWizar
 
     try {
       // 1. Create a paid/confirmed booking in backend
-      const bookingResp = await fetch('http://localhost:8000/api/bookings', {
+      const bookingResp = await fetch(`${API}/api/bookings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -14,7 +14,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
-const API = 'http://localhost:8000';
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 // ─── tiny helpers ────────────────────────────────────────────
 const F = 'var(--font-inter), Inter, system-ui, sans-serif';
@@ -58,7 +58,7 @@ export default function AdminLoginPage() {
         setError('Could not reach the server. Is the backend running?');
       }
     } catch {
-      setError('Cannot connect to backend (http://localhost:8000). Start the Python server first.');
+      setError(`Cannot connect to backend (${API}). Start the backend server or set NEXT_PUBLIC_API_URL.`);
     } finally {
       setCsrfLoading(false);
     }
